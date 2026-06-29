@@ -2,6 +2,7 @@ import hmac
 import hashlib
 from fastapi import APIRouter, Request, BackgroundTasks, HTTPException
 from ..core.config import settings
+from ..tasks.pr_tasks import process_merged_pr_task
 
 router = APIRouter()
 
@@ -18,6 +19,7 @@ def verify_github_signature(body: bytes, signature: str, secret: str) -> bool:
 
 @router.post("/webhooks/github")
 async def github_webhook(request: Request, background_tasks: BackgroundTasks):
+    """Processes incoming GitHub webhooks for PR tracking and AI extraction."""
     body = await request.body()
     signature = request.headers.get("X-Hub-Signature-256", "")
     
@@ -34,8 +36,10 @@ async def github_webhook(request: Request, background_tasks: BackgroundTasks):
         
         # Trigger: PR just merged -> Extract decisions and update graph
         if action == "closed" and payload.get("pull_request", {}).get("merged"):
-            # Normally we'd do: background_tasks.add_task(process_merged_pr_task, payload["pull_request"])
-            print(f"DEBUG: Triggered PR Merge processing for PR #{payload['pull_request']['number']}")
+            pr_data = payload["pull_request"]
+            # Dispatch to Celery queue
+            process_merged_pr_task.delay(pr_data)
+            print(f"DEBUG: Dispatched Celery task for merged PR #{pr_data.get('number')}")
             
         # Trigger: PR opened or updated -> Run PR Blocker logic
         elif action in ["opened", "synchronize", "reopened"]:

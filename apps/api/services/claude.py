@@ -11,14 +11,39 @@ logger = logging.getLogger(__name__)
 
 class ExtractedDecision(BaseModel):
     title: str = Field(description="A short, clear title of the architectural or technical decision.")
-    context: str = Field(description="Why this decision was made. The problem being solved.")
+    reason_summary: str = Field(description="Why this decision was made. The problem being solved.")
     decision: str = Field(description="What was explicitly decided or implemented in this PR.")
     alternatives_considered: List[str] = Field(default_factory=list, description="Any alternatives discussed or rejected.")
     consequences: List[str] = Field(default_factory=list, description="Downstream effects or tradeoffs of this decision.")
-    author: str = Field(description="The GitHub username of the person who made the PR.")
+    decision_author: str = Field(description="The true champion or primary author of this decision.")
+    contributing_authors: List[str] = Field(default_factory=list, description="Other participants who contributed to this decision.")
     confidence_score: float = Field(ge=0.0, le=1.0, description="AI confidence score (0.0 to 1.0) that this is a true architectural decision.")
 
 from .jira import JiraTicket
+
+async def detect_architectural_intent(pr: PRData, client: Optional[AsyncAnthropic] = None) -> bool:
+    """
+    Fast and cheap intent detector to check if a PR likely contains architectural or significant technical decisions.
+    """
+    if not client:
+        client = AsyncAnthropic(api_key=os.getenv("ANTHROPIC_API_KEY", "dummy-key"))
+
+    prompt = (
+        f"Does the following pull request seem to introduce architectural changes, new patterns, core library updates, "
+        f"or significant technical decisions? Answer 'YES' or 'NO' only.\n\n"
+        f"Title: {pr.title}\nDescription: {pr.body[:2000]}"
+    )
+    try:
+        response = await client.messages.create(
+            model="claude-3-haiku-20240307", # Cheap and fast model for classification
+            max_tokens=10,
+            messages=[{"role": "user", "content": prompt}]
+        )
+        answer = response.content[0].text.strip().upper()
+        return "YES" in answer
+    except Exception as e:
+        logger.error(f"Intent detector failed: {e}")
+        return True # Fallback to running full extraction if it fails
 
 async def summarize_diff(diff: str, client: Optional[AsyncAnthropic] = None) -> str:
     """
@@ -131,8 +156,9 @@ async def extract_decisions(
                 
                 extracted = []
                 for d in decisions_data:
-                    # Enforce the requirement: author MUST match the PR author
-                    d["author"] = pr.author
+                    # Enforce the requirement: decision_author defaults to PR author if not found
+                    if not d.get("decision_author"):
+                        d["decision_author"] = pr.author
                     extracted.append(ExtractedDecision(**d))
                     
                 return extracted

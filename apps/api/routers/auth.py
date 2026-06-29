@@ -10,9 +10,7 @@ MOCK_DB_TOKENS = {}
 
 @router.get("/auth/jira")
 async def jira_auth_start():
-    """
-    Redirects the user to Atlassian OAuth for authorization.
-    """
+    """Redirects the user to Atlassian OAuth for authorization."""
     auth_url = (
         "https://auth.atlassian.com/authorize"
         "?audience=api.atlassian.com"
@@ -26,9 +24,7 @@ async def jira_auth_start():
 
 @router.get("/auth/jira/callback")
 async def jira_auth_callback(code: str):
-    """
-    Exchanges the authorization code for an access token and stores it.
-    """
+    """Exchanges the authorization code for an access token and stores it."""
     try:
         async with httpx.AsyncClient() as client:
             token_response = await client.post(
@@ -44,7 +40,7 @@ async def jira_auth_callback(code: str):
             )
             
             if token_response.status_code != 200:
-                return {"error": "Failed to exchange token", "details": token_response.text}
+                return {"error": True, "code": token_response.status_code, "detail": "Failed to exchange token"}
                 
             tokens = token_response.json()
             
@@ -54,4 +50,4 @@ async def jira_auth_callback(code: str):
             return {"status": "success", "message": "Jira OAuth linked successfully"}
             
     except Exception as e:
-        return {"error": str(e)}
+        return {"error": True, "code": 500, "detail": str(e)}
