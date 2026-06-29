@@ -1,0 +1,42 @@
+# docker-compose.prod.cloud.yml
+# Production deployment config for Cognee Cloud
+services:
+  api:
+    image: ghcr.io/yourorg/lore-api:latest
+    restart: always
+    environment:
+      - COGNEE_MODE=cloud
+    env_file: .env.prod
+    ports: ["8000:8000"]
+    command: uvicorn main:app --host 0.0.0.0 --workers 4
+    depends_on: [postgres, redis]
+
+  worker:
+    image: ghcr.io/yourorg/lore-api:latest
+    restart: always
+    environment:
+      - COGNEE_MODE=cloud
+    env_file: .env.prod
+    command: celery -A tasks worker --concurrency 4
+    depends_on: [postgres, redis]
+
+  web:
+    image: ghcr.io/yourorg/lore-web:latest
+    restart: always
+    ports: ["3000:3000"]
+
+  postgres:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_DB: lore
+      POSTGRES_USER: lore
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes: [postgres_data:/var/lib/postgresql/data]
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+
+volumes:
+  postgres_data:

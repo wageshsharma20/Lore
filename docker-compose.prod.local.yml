@@ -1,0 +1,51 @@
+# docker-compose.prod.local.yml
+# Production deployment config for "On-Premise Privacy Mode" using open-source Cognee
+services:
+  api:
+    image: ghcr.io/yourorg/lore-api:latest
+    restart: always
+    environment:
+      - COGNEE_MODE=local
+    env_file: .env.prod
+    ports: ["8000:8000"]
+    command: uvicorn main:app --host 0.0.0.0 --workers 4
+    depends_on: [postgres, redis, neo4j]
+
+  worker:
+    image: ghcr.io/yourorg/lore-api:latest
+    restart: always
+    environment:
+      - COGNEE_MODE=local
+    env_file: .env.prod
+    command: celery -A tasks worker --concurrency 4
+    depends_on: [postgres, redis, neo4j]
+
+  web:
+    image: ghcr.io/yourorg/lore-web:latest
+    restart: always
+    ports: ["3000:3000"]
+
+  postgres:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_DB: lore
+      POSTGRES_USER: lore
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes: [postgres_data:/var/lib/postgresql/data]
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+
+  neo4j:
+    image: neo4j:5
+    restart: always
+    environment:
+      NEO4J_AUTH: ${NEO4J_USER}/${NEO4J_PASSWORD}
+    volumes:
+      - neo4j_data:/data
+
+volumes:
+  postgres_data:
+  neo4j_data:
