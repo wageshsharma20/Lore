@@ -1,7 +1,7 @@
 'use server';
 
 import { generateText } from 'ai';
-import { anthropic } from '@ai-sdk/anthropic';
+import { google } from '@ai-sdk/google';
 import { Redis } from '@upstash/redis';
 import { Octokit } from '@octokit/rest';
 import { getDecision } from '@/lib/api';
@@ -13,8 +13,8 @@ const redis = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_RE
   : null;
 
 export async function generateAdrDraft(decisionId: string) {
-  if (!process.env.ANTHROPIC_API_KEY) {
-    throw new Error('ANTHROPIC_API_KEY is missing');
+  if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+    throw new Error('GOOGLE_GENERATIVE_AI_API_KEY is missing');
   }
 
   // 1. Fetch the original decision context from FastAPI
@@ -23,9 +23,9 @@ export async function generateAdrDraft(decisionId: string) {
     throw new Error('Decision not found');
   }
 
-  // 2. Prompt Claude to generate a professional MADR v3.0 document
+  // 2. Prompt Gemini to generate a professional MADR v3.0 document
   const { text } = await generateText({
-    model: anthropic('claude-3-5-sonnet-20240620'),
+    model: google('gemini-1.5-pro'),
     prompt: `You are an expert Software Architect. 
     Write a Markdown Architecture Decision Record (MADR v3.0 format) for the following decision:
     Title: ${decision.title}
