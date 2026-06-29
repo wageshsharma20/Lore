@@ -1,9 +1,17 @@
 import { getAdr } from "@/lib/api";
+import { getAdrDraft } from "@/actions/adr";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import { ApproveButton } from "@/components/ApproveButton";
 
 export default async function AdrDetailPage({ params }: { params: { id: string } }) {
-  const adr = await getAdr(params.id);
+  let adr: any = null;
+  
+  if (params.id.startsWith("adr_draft_")) {
+    adr = await getAdrDraft(params.id);
+  } else {
+    adr = await getAdr(params.id);
+  }
 
   if (!adr) {
     return (
@@ -36,9 +44,7 @@ export default async function AdrDetailPage({ params }: { params: { id: string }
             {adr.status}
           </Badge>
           {adr.status === "Draft" && (
-            <button className="bg-black text-white px-4 py-2 rounded-md font-medium hover:bg-gray-800 transition-colors shadow-sm text-sm">
-              Approve & Finalize
-            </button>
+            <ApproveButton draftId={params.id} />
           )}
         </div>
       </div>
