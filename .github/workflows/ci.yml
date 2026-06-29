@@ -29,10 +29,6 @@ jobs:
   test-api:
     name: Test Backend (FastAPI)
     runs-on: ubuntu-latest
-    # Assuming API will be pushed to apps/api by Person A
-    defaults:
-      run:
-        working-directory: ./apps/api
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
@@ -40,12 +36,18 @@ jobs:
         with:
           python-version: '3.11'
       - name: Install dependencies
-        # Placeholder: Person A hasn't pushed API yet, so we just echo for now
-        # so the CI doesn't instantly fail when Person B pushes this.
         run: |
-          echo "Waiting for Person A to push requirements.txt"
-          # pip install -r requirements.txt
+          if [ -d "apps/api" ]; then
+            cd apps/api
+            echo "Waiting for Person A to push requirements.txt"
+          else
+            echo "apps/api not found yet, skipping."
+          fi
       - name: Run Tests
         run: |
-          echo "Waiting for Person A to push tests"
-          # python -m pytest tests/ -v
+          if [ -d "apps/api" ]; then
+            cd apps/api
+            echo "Waiting for Person A to push tests"
+          else
+            echo "apps/api not found yet, skipping."
+          fi
