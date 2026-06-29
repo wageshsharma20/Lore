@@ -1,8 +1,8 @@
-'use client'; // Error components must be Client Components
- 
+'use client';
+
 import { useEffect } from 'react';
-import { AlertCircle, ServerCrash } from 'lucide-react';
- 
+import { Card, CardContent } from "@/components/ui/card";
+
 export default function Error({
   error,
   reset,
@@ -14,32 +14,26 @@ export default function Error({
     // Log the error to an error reporting service
     console.error(error);
   }, [error]);
- 
-  return (
-    <div className="flex h-screen w-full flex-col items-center justify-center bg-zinc-950 text-white p-4">
-      <div className="flex max-w-md flex-col items-center justify-center space-y-6 rounded-2xl border border-red-900/50 bg-red-950/20 p-8 text-center backdrop-blur-sm">
-        <div className="rounded-full bg-red-900/50 p-4">
-          <ServerCrash className="h-12 w-12 text-red-500" />
-        </div>
-        
-        <div className="space-y-2">
-          <h2 className="text-2xl font-bold tracking-tight text-red-500">Backend Offline</h2>
-          <p className="text-sm text-zinc-400">
-            We couldn't connect to the FastAPI backend. Make sure Person A has started the server on port 8000!
-          </p>
-        </div>
 
-        <div className="rounded-lg bg-black/50 p-4 w-full text-left font-mono text-xs text-red-400 overflow-x-auto border border-red-900/30">
-            {error.message || "Failed to fetch from API"}
-        </div>
- 
-        <button
-          onClick={() => reset()}
-          className="w-full rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 transition-colors"
-        >
-          Try again
-        </button>
-      </div>
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[60vh] p-8">
+      <Card className="max-w-md w-full border-red-200 bg-red-50 shadow-md">
+        <CardContent className="pt-6 flex flex-col items-center text-center">
+          <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+          </div>
+          <h2 className="text-xl font-bold text-red-900 mb-2">Something went wrong!</h2>
+          <p className="text-red-700/90 mb-6 text-sm">
+            {error.message || "Failed to load data from the Lore backend. Is the Python server running?"}
+          </p>
+          <button
+            onClick={() => reset()}
+            className="bg-red-600 text-white px-4 py-2 rounded-md font-medium hover:bg-red-700 transition-colors shadow-sm"
+          >
+            Try again
+          </button>
+        </CardContent>
+      </Card>
     </div>
   );
 }
