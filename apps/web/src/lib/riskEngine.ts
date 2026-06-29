@@ -14,6 +14,18 @@ export interface ModuleRiskData {
   overallRisk: number; // 0-100 calculated
 }
 
+import { isActiveTeamMember } from './api';
+
+// Configurable per-team risk weighting defaults
+export const RISK_WEIGHTS = {
+  codeChurn: 0.25,
+  testCoverage: 0.20,
+  complexity: 0.15,
+  issueVolume: 0.15,
+  dependencyDepth: 0.15,
+  age: 0.10,
+};
+
 export function calculateLoneContributor(decisions: { author: string; date: string }[]): string | null {
   // Sort decisions by date descending
   const sorted = [...decisions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -30,11 +42,8 @@ export function calculateLoneContributor(decisions: { author: string; date: stri
   return isSilo ? primaryAuthor : null;
 }
 
-// Mock Teams Table: Active employees
-const ACTIVE_TEAM_MEMBERS = ["@alice", "@charlie", "@dave"]; // Notice @bob is missing (left the company)
-
 // Simulated data to power the Treemap (until Person A finishes the graph query API)
-export function getMockHeatmapData(): ModuleRiskData[] {
+export async function getMockHeatmapData(): Promise<ModuleRiskData[]> {
   const modules: Omit<ModuleRiskData, 'overallRisk'>[] = [
     {
       id: "mod-auth",
@@ -80,21 +89,31 @@ export function getMockHeatmapData(): ModuleRiskData[] {
     },
   ];
 
-  return modules.map(mod => {
-    // 6 factors calculation
+  return await Promise.all(modules.map(async mod => {
     const f = mod.factors;
-    const baseRisk = (f.codeChurn + f.complexity + f.testCoverage + f.issueVolume + f.dependencyDepth + f.age) / 6;
+    
+    // Weighted risk formula
+    const baseRisk = 
+      (f.codeChurn * RISK_WEIGHTS.codeChurn) + 
+      (f.testCoverage * RISK_WEIGHTS.testCoverage) + 
+      (f.complexity * RISK_WEIGHTS.complexity) + 
+      (f.issueVolume * RISK_WEIGHTS.issueVolume) + 
+      (f.dependencyDepth * RISK_WEIGHTS.dependencyDepth) + 
+      (f.age * RISK_WEIGHTS.age);
     
     // Lone-contributor silo risk calculation
     let overallRisk = Math.round(baseRisk);
     
     if (mod.loneContributor) {
-      // If the sole contributor is absent from the teams table (left the company), jump to CRITICAL risk (100).
+      // API call to check if the member is still active
+      const isActive = await isActiveTeamMember(mod.loneContributor);
+      const hasLeftCompany = !isActive;
+      
+      // If the sole contributor has left the company, jump to CRITICAL risk (100).
       // Otherwise, they are still at the company, so it's a HIGH risk (+30 penalty, capped at 90).
-      const hasLeftCompany = !ACTIVE_TEAM_MEMBERS.includes(mod.loneContributor);
       overallRisk = hasLeftCompany ? 100 : Math.min(overallRisk + 30, 90);
     }
 
     return { ...mod, overallRisk };
-  });
+  }));
 }

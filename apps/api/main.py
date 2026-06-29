@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from routers import webhooks, auth
+from routers import webhooks, auth, chat
 
 app = FastAPI(
     title="Lore API",
@@ -10,6 +10,7 @@ app = FastAPI(
 
 app.include_router(webhooks.router)
 app.include_router(auth.router)
+app.include_router(chat.router)
 
 @app.get("/health")
 async def health_check():

@@ -1,60 +1,80 @@
 // src/lib/api.ts
-import { Decision, HeatmapSummary, ADR, MOCK_DECISIONS, MOCK_SUMMARY, MOCK_ADRS } from "./mock-data";
+import { components } from "./api-types";
+import { PRCheckResult, MOCK_PR_CHECKS } from "./mock-data";
+import { MOCK_DECISIONS, MOCK_SUMMARY, MOCK_ADRS } from "./mock-data";
 
-// This points to Person A's FastAPI server, but we will temporarily use mock data
-// so you can see the UI without the backend running!
+// Extract types from the generated OpenAPI schema
+export type Decision = components["schemas"]["Decision"];
+export type HeatmapSummary = components["schemas"]["HeatmapSummary"];
+export type ADR = components["schemas"]["ADR"];
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export async function getSummary(): Promise<HeatmapSummary> {
-  // Temporary mock data for UI demo
-  return MOCK_SUMMARY;
+  const res = await fetch(`${API_BASE_URL}/api/summary`);
+  if (!res.ok) throw new Error("Failed to fetch heatmap summary");
+  return res.json();
 }
 
 export async function getDecisions(): Promise<Decision[]> {
-  // Temporary mock data for UI demo
-  return MOCK_DECISIONS;
+  const res = await fetch(`${API_BASE_URL}/api/decisions`);
+  if (!res.ok) throw new Error("Failed to fetch decisions");
+  return res.json();
 }
 
 export async function searchDecisions(query: string): Promise<Decision[]> {
-  // Temporary mock data for UI demo
-  return MOCK_DECISIONS.filter(d => d.title.toLowerCase().includes(query.toLowerCase()));
+  const res = await fetch(`${API_BASE_URL}/api/decisions?query=${encodeURIComponent(query)}`);
+  if (!res.ok) throw new Error("Failed to search decisions");
+  return res.json();
 }
 
 export async function getDecision(id: string): Promise<Decision | undefined> {
-  // Temporary mock data for UI demo
-  return MOCK_DECISIONS.find(d => d.id === id);
-}
-
-// We will wire this up to a button later today!
-export async function triggerGitHubSync() {
-  return { status: "ok" };
+  const res = await fetch(`${API_BASE_URL}/api/decisions/${id}`);
+  if (!res.ok) throw new Error("Failed to fetch decision");
+  return res.json();
 }
 
 export async function getAdrs(): Promise<ADR[]> {
-  // Temporary mock data for UI demo
-  return MOCK_ADRS;
+  const res = await fetch(`${API_BASE_URL}/api/adrs`);
+  if (!res.ok) throw new Error("Failed to fetch ADRs");
+  return res.json();
 }
 
 export async function getAdr(id: string): Promise<ADR | undefined> {
+  const res = await fetch(`${API_BASE_URL}/api/adrs/${id}`);
+  if (!res.ok) throw new Error("Failed to fetch ADR");
+  return res.json();
+}
+
+export async function getPrCheck(prNumber: string): Promise<PRCheckResult | undefined> {
   // Temporary mock data for UI demo
-  return MOCK_ADRS.find(a => a.id === id);
+  return MOCK_PR_CHECKS.find(c => c.pr_number === prNumber);
+}
+
+export async function triggerGitHubSync() {
+  const res = await fetch(`${API_BASE_URL}/api/sync`, { method: "POST" });
+  if (!res.ok) throw new Error("Failed to trigger GitHub sync");
+  return res.json();
 }
 
 export async function memifyDecision(decisionId: string, adrUrl: string) {
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/memify`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        decision_id: decisionId,
-        ratified: true,
-        adr_url: adrUrl
-      })
-    });
-    if (!res.ok) {
-      console.warn("Failed to memify decision on backend:", await res.text());
-    }
-  } catch (error) {
-    console.warn("Backend not reachable for memify (using mock mode):", error);
+  const res = await fetch(`${API_BASE_URL}/api/memify`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      decision_id: decisionId,
+      ratified: true,
+      adr_url: adrUrl
+    })
+  });
+  if (!res.ok) throw new Error("Failed to memify decision");
+  return res.json();
+}
+
+export async function isActiveTeamMember(id: string): Promise<boolean> {
+  const res = await fetch(`${API_BASE_URL}/api/members/${encodeURIComponent(id)}/active`);
+  if (!res.ok) {
+    throw new Error("Failed to check team member status");
   }
+  return await res.json();
 }

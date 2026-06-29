@@ -1,0 +1,17 @@
+{
+  "action": "closed",
+  "pull_request": {
+    "number": 123,
+    "title": "feat: Replace Tailwind with pure CSS",
+    "body": "## Architectural Decision\n\nWe removed Tailwind CSS because it was causing severe bundle bloat and class conflicts across our micro-frontends.\n\nJira: LORE-404",
+    "html_url": "https://github.com/tarot-club-hackathons/lore/pull/123",
+    "merged": true,
+    "user": {
+      "login": "alice-dev"
+    },
+    "merged_at": "2026-06-29T21:52:39.000Z"
+  },
+  "repository": {
+    "full_name": "tarot-club-hackathons/lore"
+  }
+}

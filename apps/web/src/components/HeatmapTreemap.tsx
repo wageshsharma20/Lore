@@ -111,6 +111,19 @@ export function HeatmapTreemap({ data }: HeatmapTreemapProps) {
       .style('text-shadow', '0 1px 2px rgba(0,0,0,0.8)')
       .text(d => `Risk: ${d.data.overallRisk}%`);
 
+    // Accessibility label for colorblind users
+    leaf.append('text')
+      .attr('x', 8)
+      .attr('y', 62)
+      .attr('fill', 'rgba(255,255,255,0.9)')
+      .style('font-size', '12px')
+      .style('font-weight', '800')
+      .style('pointer-events', 'none')
+      .style('text-transform', 'uppercase')
+      .style('letter-spacing', '0.05em')
+      .style('text-shadow', '0 1px 2px rgba(0,0,0,0.9)')
+      .text(d => d.data.overallRisk >= 80 ? 'Critical' : d.data.overallRisk >= 50 ? 'High' : 'Low');
+
   }, [data]);
 
   return (

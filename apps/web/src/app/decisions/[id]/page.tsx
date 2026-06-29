@@ -1,12 +1,20 @@
+"use client";
+
+import { use } from "react";
 import { getDecision } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 
-export default async function DecisionDetail({ params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = await params;
+export default function DecisionDetail({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = use(params);
   
-  // ⚡️ Fetching the single live decision!
-  const decision = await getDecision(resolvedParams.id);
+  const { data: decision, isLoading } = useQuery({
+    queryKey: ['decision', resolvedParams.id],
+    queryFn: () => getDecision(resolvedParams.id)
+  });
+
+  if (isLoading) return <div className="p-8 text-center">Loading decision...</div>;
 
   if (!decision) {
     return <div className="p-8 text-red-500">Decision not found!</div>;

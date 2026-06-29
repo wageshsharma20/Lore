@@ -4,6 +4,7 @@ import { generateText } from 'ai';
 import { google } from '@ai-sdk/google';
 import { Redis } from '@upstash/redis';
 import { Octokit } from '@octokit/rest';
+import { createAppAuth } from '@octokit/auth-app';
 import { getDecision, memifyDecision } from '@/lib/api';
 import { revalidatePath } from 'next/cache';
 
@@ -61,8 +62,8 @@ export async function generateAdrDraft(decisionId: string) {
 }
 
 export async function approveAndCommitAdr(draftId: string) {
-  if (!process.env.GITHUB_PAT) {
-    throw new Error('GITHUB_PAT is missing. Cannot commit to repo.');
+  if (!process.env.GITHUB_APP_ID || !process.env.GITHUB_APP_PRIVATE_KEY || !process.env.GITHUB_INSTALLATION_ID) {
+    throw new Error('GitHub App credentials are missing. Cannot commit to repo.');
   }
 
   if (!redis) {
@@ -76,7 +77,14 @@ export async function approveAndCommitAdr(draftId: string) {
   }
 
   // 2. Authenticate with Octokit
-  const octokit = new Octokit({ auth: process.env.GITHUB_PAT });
+  const appAuth = createAppAuth({
+    appId: process.env.GITHUB_APP_ID,
+    privateKey: process.env.GITHUB_APP_PRIVATE_KEY.replace(/\\n/g, '\n'),
+    installationId: process.env.GITHUB_INSTALLATION_ID,
+  });
+  
+  const { token } = await appAuth({ type: 'installation' });
+  const octokit = new Octokit({ auth: token });
   
   // Note: For a hackathon, we assume the repo is 'tarot-club-hackathons/lore'
   const owner = 'tarot-club-hackathons';
@@ -122,7 +130,11 @@ export async function approveAndCommitAdr(draftId: string) {
     });
 
     // 7. Call memify to enrich the original decision node with the ratified status and ADR link
-    await memifyDecision(draft.decisionId, pr.html_url);
+    try {
+      await memifyDecision(draft.decisionId, pr.html_url);
+    } catch (memifyError) {
+      console.error("Warning: PR created successfully, but memifyDecision failed. The decision graph may be stale.", memifyError);
+    }
 
     // 8. Clean up the draft from Redis
     await redis.del(`adr:draft:${draftId}`);

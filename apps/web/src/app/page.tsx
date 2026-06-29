@@ -1,125 +1,111 @@
+'use client';
+
+import { motion } from "framer-motion";
 import Link from "next/link";
-import { getSummary, getDecisions } from "@/lib/api";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { SyncButton } from "@/components/SyncButton"; // 👈 We imported your new button!
 
-function MemoryModeToggle() {
+export default function LandingPage() {
   return (
-    <div className="flex items-center bg-white/5 backdrop-blur-md p-1 rounded-lg border border-white/10 text-sm font-medium shadow-xl">
-      <div className="px-3 py-1.5 bg-primary/20 rounded-md text-primary-foreground flex items-center gap-2 border border-primary/30 shadow-[0_0_15px_rgba(168,85,247,0.4)]">
-        <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
-        Cloud
-      </div>
-      <div className="px-3 py-1.5 text-muted-foreground cursor-not-allowed hover:text-white transition-colors">
-        On-Premise
-      </div>
-    </div>
-  );
-}
-
-function OnboardingChecklist() {
-  return (
-    <div className="mb-12 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl relative overflow-hidden">
-      <div className="absolute -top-24 -right-24 w-48 h-48 bg-primary/20 rounded-full blur-3xl"></div>
-      <h2 className="text-2xl font-bold mb-6 bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">Welcome to Lore! Let's get you set up.</h2>
-      <div className="space-y-4 relative z-10">
-        <div className="flex items-center gap-4 group">
-          <div className="w-4 h-4 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
-          <p className="text-lg text-gray-200 group-hover:text-white transition-colors"><span className="font-semibold">Step 1:</span> Start the Lore backend <span className="text-sm text-emerald-400 ml-2">(Done!)</span></p>
-        </div>
-        <div className="flex items-center gap-4 group">
-          <div className="w-4 h-4 rounded-full bg-white/20"></div>
-          <p className="text-lg text-gray-400 group-hover:text-gray-200 transition-colors"><span className="font-semibold">Step 2:</span> Connect GitHub App</p>
-        </div>
-        <div className="flex items-center gap-4 group">
-          <div className="w-4 h-4 rounded-full bg-white/20"></div>
-          <p className="text-lg text-gray-400 group-hover:text-gray-200 transition-colors"><span className="font-semibold">Step 3:</span> Connect Slack Bot</p>
-        </div>
-        <div className="flex items-center gap-4 group">
-          <div className="w-4 h-4 rounded-full bg-white/20"></div>
-          <p className="text-lg text-gray-400 group-hover:text-gray-200 transition-colors"><span className="font-semibold">Step 4:</span> Merge your first PR with a Jira ticket!</p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export default async function Dashboard() {
-  const summary = await getSummary();
-  const decisions = await getDecisions();
-  return (
-    <main className="p-8 max-w-5xl mx-auto min-h-screen relative">
-      {/* Background Mesh Gradient */}
-      <div className="fixed inset-0 z-[-1] bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/10 via-background to-background"></div>
+    <div className="dark bg-black min-h-screen text-white overflow-hidden relative selection:bg-primary/30 selection:text-primary-foreground font-sans">
       
-      {/* 👈 We put the Title and the Button side-by-side using Flexbox */}
-      <div className="flex justify-between items-center mb-12 mt-8">
-        <h1 className="text-5xl font-extrabold tracking-tight bg-gradient-to-br from-white to-gray-500 bg-clip-text text-transparent drop-shadow-sm">Lore: Engineering Historian</h1>
-        <div className="flex items-center gap-4">
-          <MemoryModeToggle />
-          <SyncButton />
-        </div>
-      </div>
-
-      {decisions.length === 0 && <OnboardingChecklist />}
+      {/* Background Orbs */}
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/20 rounded-full blur-[120px] pointer-events-none"></div>
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-600/20 rounded-full blur-[120px] pointer-events-none"></div>
       
-      {/* Summary Cards */}
-      <section className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-12">
-        <Card className="bg-white/5 backdrop-blur-md border-white/10 hover:bg-white/10 transition-colors shadow-lg">
-          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-gray-400 uppercase tracking-wider">Total Decisions</CardTitle></CardHeader>
-          <CardContent><p className="text-4xl font-black text-white">{summary.total_decisions}</p></CardContent>
-        </Card>
-        <Card className="bg-destructive/10 backdrop-blur-md border-destructive/30 hover:bg-destructive/20 transition-colors shadow-[0_0_15px_rgba(220,38,38,0.15)]">
-          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-destructive-foreground uppercase tracking-wider">Knowledge Silos (At Risk!)</CardTitle></CardHeader>
-          <CardContent><p className="text-4xl font-black text-destructive-foreground drop-shadow-md">{summary.red_silos}</p></CardContent>
-        </Card>
-        <Card className="bg-amber-500/10 backdrop-blur-md border-amber-500/30 hover:bg-amber-500/20 transition-colors shadow-lg">
-          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-amber-500 uppercase tracking-wider">Stale Decisions</CardTitle></CardHeader>
-          <CardContent><p className="text-4xl font-black text-amber-500 drop-shadow-md">{summary.yellow_warnings}</p></CardContent>
-        </Card>
-        <Card className="bg-emerald-500/10 backdrop-blur-md border-emerald-500/30 hover:bg-emerald-500/20 transition-colors shadow-lg">
-          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-emerald-500 uppercase tracking-wider">Healthy Modules</CardTitle></CardHeader>
-          <CardContent><p className="text-4xl font-black text-emerald-500 drop-shadow-md">{summary.green_healthy}</p></CardContent>
-        </Card>
-      </section>
+      {/* Mini Nav */}
+      <nav className="absolute top-0 w-full z-50 p-6 flex justify-between items-center max-w-7xl mx-auto left-0 right-0">
+        <div className="flex items-center gap-3">
+          <span className="w-4 h-4 bg-primary rounded-full animate-pulse shadow-[0_0_15px_rgba(168,85,247,0.8)]"></span>
+          <span className="font-extrabold text-2xl tracking-tighter text-white">Lore</span>
+        </div>
+        <Link 
+          href="/dashboard" 
+          className="px-6 py-2.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-md font-medium text-sm transition-all hover:scale-105"
+        >
+          Enter Dashboard
+        </Link>
+      </nav>
 
-      {/* Recent Decisions */}
-      <section>
-        <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
-          <span className="w-2 h-8 bg-primary rounded-full"></span>
-          Recent Decisions
-        </h2>
-        <div className="flex flex-col gap-4">
-          {decisions.map((decision) => (
-            <Link href={`/decisions/${decision.id}`} key={decision.id}>
-              <Card className="bg-white/5 backdrop-blur-sm border-white/10 hover:border-primary/50 hover:bg-white/10 transition-all duration-300 hover:scale-[1.01] hover:shadow-xl hover:shadow-primary/5 cursor-pointer group">
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle className="text-xl group-hover:text-primary transition-colors">{decision.title}</CardTitle>
-                      <p className="text-sm text-gray-400 mt-2">
-                        Made by <span className="font-medium text-gray-200 bg-white/10 px-2 py-0.5 rounded-md mx-1">{decision.author}</span> on {decision.date}
-                      </p>
-                    </div>
-                    <Badge variant="secondary" className="bg-primary/20 text-primary-foreground border-primary/30 group-hover:bg-primary group-hover:text-white transition-colors">{decision.decision_type}</Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="mb-4">
-                    <h3 className="font-semibold text-sm text-gray-400 uppercase tracking-wider mb-1">What was decided</h3>
-                    <p className="text-gray-200 leading-relaxed">{decision.what}</p>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-sm text-gray-400 uppercase tracking-wider mb-1">The Reason</h3>
-                    <p className="italic text-gray-400 border-l-2 border-white/20 pl-4 py-1 leading-relaxed">"{decision.reason}"</p>
-                  </div>
-                </CardContent>
-              </Card>
+      {/* Hero Section */}
+      <main className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 pt-20">
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="text-center max-w-4xl mx-auto"
+        >
+          <Badge variant="outline" className="mb-6 bg-white/5 border-white/10 text-gray-300 backdrop-blur-sm px-4 py-1.5 text-xs tracking-widest uppercase">
+            Hackathon Edition v1.0
+          </Badge>
+          <h1 className="text-6xl md:text-8xl font-black tracking-tighter mb-8 leading-tight">
+            Your codebase's <br />
+            <span className="bg-gradient-to-r from-primary via-fuchsia-400 to-blue-400 bg-clip-text text-transparent">
+              memory.
+            </span>
+          </h1>
+          <p className="text-xl md:text-2xl text-gray-400 font-light mb-12 max-w-2xl mx-auto leading-relaxed">
+            Never lose context again. Lore autonomously captures, maps, and guards the architectural decisions that shape your product.
+          </p>
+          
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+            <Link href="/dashboard">
+              <button className="px-8 py-4 rounded-full bg-primary text-white font-bold text-lg hover:bg-primary/90 transition-all shadow-[0_0_40px_rgba(168,85,247,0.4)] hover:shadow-[0_0_60px_rgba(168,85,247,0.6)] hover:scale-105">
+                Experience Lore
+              </button>
             </Link>
+            <a href="https://github.com" target="_blank" rel="noreferrer" className="px-8 py-4 rounded-full bg-white/5 border border-white/10 text-white font-medium text-lg hover:bg-white/10 backdrop-blur-sm transition-all hover:scale-105 flex items-center gap-3">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.45-1.15-1.11-1.46-1.11-1.46-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2Z"/></svg>
+              View GitHub
+            </a>
+          </div>
+        </motion.div>
+      </main>
+
+      {/* Features Grid */}
+      <section className="relative z-10 max-w-7xl mx-auto px-4 py-32">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {[
+            {
+              title: "Ask Lore",
+              description: "Chat directly with your codebase's architectural history. Powered by a live Knowledge Graph.",
+              icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
+              delay: 0.2
+            },
+            {
+              title: "Risk Engine",
+              description: "Mathematically detect knowledge silos and risky architectural chokepoints before they become critical.",
+              icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12h4l3-9 5 18 3-9h5"/></svg>,
+              delay: 0.4
+            },
+            {
+              title: "PR Interceptor",
+              description: "Autonomous governance. Block pull requests that violate historical architectural decisions automatically.",
+              icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7"/><line x1="6" y1="9" x2="6" y2="21"/></svg>,
+              delay: 0.6
+            }
+          ].map((feature, i) => (
+            <motion.div 
+              key={i}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: feature.delay }}
+              className="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-xl hover:bg-white/10 transition-colors group cursor-default"
+            >
+              <div className="w-12 h-12 bg-primary/20 text-primary rounded-2xl flex items-center justify-center mb-6 border border-primary/30 group-hover:scale-110 transition-transform">
+                {feature.icon}
+              </div>
+              <h3 className="text-2xl font-bold mb-3 text-white tracking-tight">{feature.title}</h3>
+              <p className="text-gray-400 leading-relaxed font-light">{feature.description}</p>
+            </motion.div>
           ))}
         </div>
       </section>
-    </main>
+      
+      {/* Footer */}
+      <footer className="border-t border-white/10 py-12 text-center text-gray-500 text-sm">
+        <p>© 2026 Lore Inc. Built for the Hackathon.</p>
+      </footer>
+    </div>
   );
 }

@@ -1,0 +1,236 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Lore API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/decisions": {
+      "get": {
+        "operationId": "getDecisions",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Decision"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/summary": {
+      "get": {
+        "operationId": "getSummary",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HeatmapSummary"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/adrs": {
+      "get": {
+        "operationId": "getAdrs",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ADR"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/memify": {
+      "post": {
+        "operationId": "memifyDecision",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "decision_id": { "type": "string" },
+                  "ratified": { "type": "boolean" },
+                  "adr_url": { "type": "string" }
+                },
+                "required": ["decision_id", "ratified"]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sync": {
+      "post": {
+        "operationId": "triggerGitHubSync",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/members/{id}/active": {
+      "get": {
+        "operationId": "isActiveTeamMember",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chat": {
+      "post": {
+        "operationId": "chat",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Decision": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "decision_type": { "type": "string" },
+          "what": { "type": "string" },
+          "reason": { "type": "string" },
+          "author": { "type": "string" },
+          "contributors": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "date": { "type": "string" },
+          "affected_systems": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "source_pr_url": { "type": "string" }
+        },
+        "required": ["id", "title", "decision_type", "what", "reason", "author", "contributors", "date", "affected_systems", "source_pr_url"]
+      },
+      "ADR": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "status": { "type": "string" },
+          "author": { "type": "string" },
+          "date": { "type": "string" },
+          "content": { "type": "string" }
+        },
+        "required": ["id", "title", "status", "author", "date", "content"]
+      },
+      "HeatmapSummary": {
+        "type": "object",
+        "properties": {
+          "total_decisions": { "type": "integer" },
+          "red_silos": { "type": "integer" },
+          "yellow_warnings": { "type": "integer" },
+          "green_healthy": { "type": "integer" }
+        },
+        "required": ["total_decisions", "red_silos", "yellow_warnings", "green_healthy"]
+      },
+      "ChatMessage": {
+        "type": "object",
+        "properties": {
+          "role": { "type": "string" },
+          "content": { "type": "string" }
+        },
+        "required": ["role", "content"]
+      },
+      "ChatRequest": {
+        "type": "object",
+        "properties": {
+          "messages": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ChatMessage" }
+          }
+        },
+        "required": ["messages"]
+      }
+    }
+  }
+}

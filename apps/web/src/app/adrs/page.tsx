@@ -1,20 +1,37 @@
+"use client";
+
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { getAdrs } from "@/lib/api";
 import { getAdrDrafts } from "@/actions/adr";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
-export default async function AdrsPage() {
-  let adrs: any[] = [];
-  try {
-    adrs = await getAdrs();
-  } catch (e) {
-    // If backend is offline, just show drafts
-  }
-  const drafts = await getAdrDrafts() as any[];
+export default function AdrsPage() {
+  const { data: adrs = [], isLoading: loadingAdrs } = useQuery({
+    queryKey: ['adrs'],
+    queryFn: getAdrs,
+    retry: 1, // Only retry once so it fails fast for demo
+  });
+
+  const { data: drafts = [], isLoading: loadingDrafts } = useQuery({
+    queryKey: ['adrDrafts'],
+    queryFn: async () => await getAdrDrafts() as any[],
+  });
   
   // Merge drafts with approved ADRs
   const allAdrs = [...drafts, ...adrs];
+
+  if (loadingAdrs || loadingDrafts) {
+    return (
+      <main className="p-8 max-w-4xl mx-auto min-h-[80vh] flex flex-col justify-start items-center">
+        <div className="mt-20 flex flex-col items-center gap-4">
+          <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-gray-500 animate-pulse">Loading Architecture Decision Records...</p>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="p-8 max-w-4xl mx-auto min-h-[80vh] flex flex-col justify-start items-center">

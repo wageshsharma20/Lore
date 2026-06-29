@@ -1,11 +1,19 @@
+"use client";
+
 import { getDecisions } from "@/lib/api";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 
-export default async function DecisionsList() {
-  // ⚡️ Fetching live data!
-  const decisions = await getDecisions();
+export default function DecisionsList() {
+  const { data: decisions = [], isLoading } = useQuery({
+    queryKey: ['decisions'],
+    queryFn: async () => getDecisions(),
+    throwOnError: true,
+  });
+
+  if (isLoading) return <div className="p-8 text-center">Loading...</div>;
 
   return (
     <main className="p-8 max-w-4xl mx-auto">

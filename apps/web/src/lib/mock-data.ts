@@ -85,3 +85,31 @@ export const MOCK_ADRS: ADR[] = SHOW_EMPTY_STATE ? [] : [
     content: "# Context\nLong running AI extraction tasks are blocking the web server.\n\n# Decision\nWe will adopt Celery with a Redis broker.\n\n# Consequences\nIncreased infrastructure complexity, but significantly better UI responsiveness."
   }
 ];
+
+export type PRCheckResult = {
+  pr_number: string;
+  status: 'passed' | 'blocked';
+  author: string;
+  reason: string;
+  conflict_path: string | null;
+  original_decision_id: string;
+};
+
+export const MOCK_PR_CHECKS: PRCheckResult[] = [
+  {
+    pr_number: "101",
+    status: "blocked",
+    author: "@alice",
+    reason: "We removed Tailwind CSS because it was causing severe bundle bloat and class conflicts across our micro-frontends.",
+    conflict_path: "(PR #101: Add Tailwind) -> CONFLICTS WITH -> (Decision: Remove Tailwind CSS)",
+    original_decision_id: "dec_1"
+  },
+  {
+    pr_number: "102",
+    status: "passed",
+    author: "@system",
+    reason: "No architectural conflicts found.",
+    conflict_path: null,
+    original_decision_id: "none"
+  }
+];
