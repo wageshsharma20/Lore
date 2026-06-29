@@ -4,7 +4,7 @@ import { generateText } from 'ai';
 import { google } from '@ai-sdk/google';
 import { Redis } from '@upstash/redis';
 import { Octokit } from '@octokit/rest';
-import { getDecision } from '@/lib/api';
+import { getDecision, memifyDecision } from '@/lib/api';
 import { revalidatePath } from 'next/cache';
 
 // Initialize Redis only if env vars are present
@@ -121,7 +121,10 @@ export async function approveAndCommitAdr(draftId: string) {
       base: 'main',
     });
 
-    // 7. Clean up the draft from Redis
+    // 7. Call memify to enrich the original decision node with the ratified status and ADR link
+    await memifyDecision(draft.decisionId, pr.html_url);
+
+    // 8. Clean up the draft from Redis
     await redis.del(`adr:draft:${draftId}`);
     
     revalidatePath('/adrs');

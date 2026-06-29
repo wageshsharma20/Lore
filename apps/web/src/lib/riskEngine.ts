@@ -30,6 +30,9 @@ export function calculateLoneContributor(decisions: { author: string; date: stri
   return isSilo ? primaryAuthor : null;
 }
 
+// Mock Teams Table: Active employees
+const ACTIVE_TEAM_MEMBERS = ["@alice", "@charlie", "@dave"]; // Notice @bob is missing (left the company)
+
 // Simulated data to power the Treemap (until Person A finishes the graph query API)
 export function getMockHeatmapData(): ModuleRiskData[] {
   const modules: Omit<ModuleRiskData, 'overallRisk'>[] = [
@@ -83,8 +86,14 @@ export function getMockHeatmapData(): ModuleRiskData[] {
     const baseRisk = (f.codeChurn + f.complexity + f.testCoverage + f.issueVolume + f.dependencyDepth + f.age) / 6;
     
     // Lone-contributor silo risk calculation
-    // If a module's decisions are entirely by one person, it scores maximum silo risk (100).
-    const overallRisk = mod.loneContributor ? 100 : Math.round(baseRisk);
+    let overallRisk = Math.round(baseRisk);
+    
+    if (mod.loneContributor) {
+      // If the sole contributor is absent from the teams table (left the company), jump to CRITICAL risk (100).
+      // Otherwise, they are still at the company, so it's a HIGH risk (+30 penalty, capped at 90).
+      const hasLeftCompany = !ACTIVE_TEAM_MEMBERS.includes(mod.loneContributor);
+      overallRisk = hasLeftCompany ? 100 : Math.min(overallRisk + 30, 90);
+    }
 
     return { ...mod, overallRisk };
   });
