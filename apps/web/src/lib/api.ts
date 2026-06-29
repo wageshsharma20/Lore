@@ -16,6 +16,12 @@ export async function getDecisions(): Promise<Decision[]> {
   return await res.json();
 }
 
+export async function searchDecisions(query: string): Promise<Decision[]> {
+  const res = await fetch(`${API_BASE_URL}/api/decisions/search?q=${encodeURIComponent(query)}`, { cache: 'no-store' });
+  if (!res.ok) throw new Error(`Failed to search decisions with query: ${query}`);
+  return await res.json();
+}
+
 export async function getDecision(id: string): Promise<Decision | undefined> {
   const res = await fetch(`${API_BASE_URL}/api/decisions/${id}`, { cache: 'no-store' });
   if (res.status === 404) return undefined;
