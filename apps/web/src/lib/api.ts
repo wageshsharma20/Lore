@@ -1,50 +1,60 @@
 // src/lib/api.ts
-import { Decision, HeatmapSummary, ADR } from "./mock-data";
+import { Decision, HeatmapSummary, ADR, MOCK_DECISIONS, MOCK_SUMMARY, MOCK_ADRS } from "./mock-data";
 
-// This points to Person A's FastAPI server
+// This points to Person A's FastAPI server, but we will temporarily use mock data
+// so you can see the UI without the backend running!
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export async function getSummary(): Promise<HeatmapSummary> {
-  const res = await fetch(`${API_BASE_URL}/api/summary`, { cache: 'no-store' });
-  if (!res.ok) throw new Error("Failed to fetch summary from DB");
-  return await res.json();
+  // Temporary mock data for UI demo
+  return MOCK_SUMMARY;
 }
 
 export async function getDecisions(): Promise<Decision[]> {
-  const res = await fetch(`${API_BASE_URL}/api/decisions`, { cache: 'no-store' });
-  if (!res.ok) throw new Error("Failed to fetch decisions from DB");
-  return await res.json();
+  // Temporary mock data for UI demo
+  return MOCK_DECISIONS;
 }
 
 export async function searchDecisions(query: string): Promise<Decision[]> {
-  const res = await fetch(`${API_BASE_URL}/api/decisions/search?q=${encodeURIComponent(query)}`, { cache: 'no-store' });
-  if (!res.ok) throw new Error(`Failed to search decisions with query: ${query}`);
-  return await res.json();
+  // Temporary mock data for UI demo
+  return MOCK_DECISIONS.filter(d => d.title.toLowerCase().includes(query.toLowerCase()));
 }
 
 export async function getDecision(id: string): Promise<Decision | undefined> {
-  const res = await fetch(`${API_BASE_URL}/api/decisions/${id}`, { cache: 'no-store' });
-  if (res.status === 404) return undefined;
-  if (!res.ok) throw new Error(`Failed to fetch decision ${id} from DB`);
-  return await res.json();
+  // Temporary mock data for UI demo
+  return MOCK_DECISIONS.find(d => d.id === id);
 }
 
 // We will wire this up to a button later today!
 export async function triggerGitHubSync() {
-  const res = await fetch(`${API_BASE_URL}/api/sync`, { method: "POST" });
-  if (!res.ok) throw new Error("Failed to trigger sync");
-  return await res.json();
+  return { status: "ok" };
 }
 
 export async function getAdrs(): Promise<ADR[]> {
-  const res = await fetch(`${API_BASE_URL}/api/adrs`, { cache: 'no-store' });
-  if (!res.ok) throw new Error("Failed to fetch adrs from DB");
-  return await res.json();
+  // Temporary mock data for UI demo
+  return MOCK_ADRS;
 }
 
 export async function getAdr(id: string): Promise<ADR | undefined> {
-  const res = await fetch(`${API_BASE_URL}/api/adrs/${id}`, { cache: 'no-store' });
-  if (res.status === 404) return undefined;
-  if (!res.ok) throw new Error(`Failed to fetch adr ${id} from DB`);
-  return await res.json();
+  // Temporary mock data for UI demo
+  return MOCK_ADRS.find(a => a.id === id);
+}
+
+export async function memifyDecision(decisionId: string, adrUrl: string) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/memify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        decision_id: decisionId,
+        ratified: true,
+        adr_url: adrUrl
+      })
+    });
+    if (!res.ok) {
+      console.warn("Failed to memify decision on backend:", await res.text());
+    }
+  } catch (error) {
+    console.warn("Backend not reachable for memify (using mock mode):", error);
+  }
 }

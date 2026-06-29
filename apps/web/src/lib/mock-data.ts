@@ -13,7 +13,7 @@ export type Decision = {
   source_pr_url: string;
 };
 
-export const SHOW_EMPTY_STATE = true;
+export const SHOW_EMPTY_STATE = false;
 
 export const MOCK_DECISIONS: Decision[] = SHOW_EMPTY_STATE ? [] : [
   {
