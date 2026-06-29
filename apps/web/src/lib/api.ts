@@ -5,39 +5,22 @@ import { Decision, HeatmapSummary, ADR } from "./mock-data";
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export async function getSummary(): Promise<HeatmapSummary> {
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/summary`, { cache: 'no-store' });
-    if (!res.ok) throw new Error("Failed to fetch summary");
-    return await res.json();
-  } catch (error) {
-    console.warn("Backend not running or unreachable, falling back to mock data!");
-    const { MOCK_SUMMARY } = await import("./mock-data");
-    return MOCK_SUMMARY;
-  }
+  const res = await fetch(`${API_BASE_URL}/api/summary`, { cache: 'no-store' });
+  if (!res.ok) throw new Error("Failed to fetch summary from DB");
+  return await res.json();
 }
 
 export async function getDecisions(): Promise<Decision[]> {
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/decisions`, { cache: 'no-store' });
-    if (!res.ok) throw new Error("Failed to fetch decisions");
-    return await res.json();
-  } catch (error) {
-    console.warn("Backend not running or unreachable, falling back to mock data!");
-    const { MOCK_DECISIONS } = await import("./mock-data");
-    return MOCK_DECISIONS;
-  }
+  const res = await fetch(`${API_BASE_URL}/api/decisions`, { cache: 'no-store' });
+  if (!res.ok) throw new Error("Failed to fetch decisions from DB");
+  return await res.json();
 }
 
 export async function getDecision(id: string): Promise<Decision | undefined> {
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/decisions/${id}`, { cache: 'no-store' });
-    if (!res.ok) throw new Error("Failed to fetch decision");
-    return await res.json();
-  } catch (error) {
-    console.warn("Backend not running or unreachable, falling back to mock data!");
-    const { MOCK_DECISIONS } = await import("./mock-data");
-    return MOCK_DECISIONS.find(d => d.id === id);
-  }
+  const res = await fetch(`${API_BASE_URL}/api/decisions/${id}`, { cache: 'no-store' });
+  if (res.status === 404) return undefined;
+  if (!res.ok) throw new Error(`Failed to fetch decision ${id} from DB`);
+  return await res.json();
 }
 
 // We will wire this up to a button later today!
@@ -48,25 +31,14 @@ export async function triggerGitHubSync() {
 }
 
 export async function getAdrs(): Promise<ADR[]> {
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/adrs`, { cache: 'no-store' });
-    if (!res.ok) throw new Error("Failed to fetch adrs");
-    return await res.json();
-  } catch (error) {
-    console.warn("Backend not running or unreachable, falling back to mock data!");
-    const { MOCK_ADRS } = await import("./mock-data");
-    return MOCK_ADRS;
-  }
+  const res = await fetch(`${API_BASE_URL}/api/adrs`, { cache: 'no-store' });
+  if (!res.ok) throw new Error("Failed to fetch adrs from DB");
+  return await res.json();
 }
 
 export async function getAdr(id: string): Promise<ADR | undefined> {
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/adrs/${id}`, { cache: 'no-store' });
-    if (!res.ok) throw new Error("Failed to fetch adr");
-    return await res.json();
-  } catch (error) {
-    console.warn("Backend not running or unreachable, falling back to mock data!");
-    const { MOCK_ADRS } = await import("./mock-data");
-    return MOCK_ADRS.find(a => a.id === id);
-  }
+  const res = await fetch(`${API_BASE_URL}/api/adrs/${id}`, { cache: 'no-store' });
+  if (res.status === 404) return undefined;
+  if (!res.ok) throw new Error(`Failed to fetch adr ${id} from DB`);
+  return await res.json();
 }
