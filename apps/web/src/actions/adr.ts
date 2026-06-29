@@ -133,6 +133,15 @@ export async function approveAndCommitAdr(draftId: string) {
   }
 }
 
+export async function rejectAdrDraft(draftId: string) {
+  if (!redis) {
+    throw new Error('Redis is not configured. Cannot retrieve draft.');
+  }
+  
+  await redis.del(`adr:draft:${draftId}`);
+  revalidatePath('/adrs');
+}
+
 export async function getAdrDrafts() {
   if (!redis) return [];
   const keys = await redis.keys('adr:draft:*');

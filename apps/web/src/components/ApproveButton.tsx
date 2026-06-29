@@ -1,11 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { approveAndCommitAdr } from '@/actions/adr';
+import { approveAndCommitAdr, rejectAdrDraft } from '@/actions/adr';
+import { useRouter } from 'next/navigation';
 
 export function ApproveButton({ draftId }: { draftId: string }) {
   const [loading, setLoading] = useState(false);
+  const [rejecting, setRejecting] = useState(false);
   const [prUrl, setPrUrl] = useState<string | null>(null);
+  const router = useRouter();
 
   const handleApprove = async () => {
     setLoading(true);
@@ -23,6 +26,18 @@ export function ApproveButton({ draftId }: { draftId: string }) {
     }
   };
 
+  const handleReject = async () => {
+    if (!confirm('Are you sure you want to reject and delete this ADR draft?')) return;
+    setRejecting(true);
+    try {
+      await rejectAdrDraft(draftId);
+      router.push('/adrs');
+    } catch (e: any) {
+      alert(e.message);
+      setRejecting(false);
+    }
+  };
+
   if (prUrl) {
     return (
       <a 
@@ -37,12 +52,21 @@ export function ApproveButton({ draftId }: { draftId: string }) {
   }
 
   return (
-    <button 
-      onClick={handleApprove}
-      disabled={loading}
-      className="bg-black text-white px-4 py-2 rounded-md font-medium hover:bg-gray-800 transition-colors shadow-sm text-sm disabled:opacity-50"
-    >
-      {loading ? "Generating PR..." : "Approve & Finalize"}
-    </button>
+    <div className="flex gap-2">
+      <button 
+        onClick={handleReject}
+        disabled={loading || rejecting}
+        className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-md font-medium hover:bg-gray-50 transition-colors shadow-sm text-sm disabled:opacity-50"
+      >
+        {rejecting ? "Rejecting..." : "Reject"}
+      </button>
+      <button 
+        onClick={handleApprove}
+        disabled={loading || rejecting}
+        className="bg-black text-white px-4 py-2 rounded-md font-medium hover:bg-gray-800 transition-colors shadow-sm text-sm disabled:opacity-50"
+      >
+        {loading ? "Generating PR..." : "Approve & Finalize"}
+      </button>
+    </div>
   );
 }
