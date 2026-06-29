@@ -14,7 +14,23 @@ export interface ModuleRiskData {
   overallRisk: number; // 0-100 calculated
 }
 
-// Simulated data to power the Treemap
+export function calculateLoneContributor(decisions: { author: string; date: string }[]): string | null {
+  // Sort decisions by date descending
+  const sorted = [...decisions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  
+  // Need at least 10 decisions to trigger the silo condition
+  if (sorted.length < 10) return null;
+  
+  const last10 = sorted.slice(0, 10);
+  const primaryAuthor = last10[0].author;
+  
+  // Check if every single one of the last 10 decisions traces back to the exact same author
+  const isSilo = last10.every(d => d.author === primaryAuthor);
+  
+  return isSilo ? primaryAuthor : null;
+}
+
+// Simulated data to power the Treemap (until Person A finishes the graph query API)
 export function getMockHeatmapData(): ModuleRiskData[] {
   const modules: Omit<ModuleRiskData, 'overallRisk'>[] = [
     {
