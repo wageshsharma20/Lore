@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-from .routers import webhooks, auth, chat, adrs, ask
+from .routers import webhooks, auth, chat, adrs, ask, decisions
 import logging
 
 logger = logging.getLogger(__name__)
@@ -38,10 +38,9 @@ app.include_router(auth.router)
 app.include_router(chat.router)
 app.include_router(adrs.router)
 app.include_router(ask.router)
+app.include_router(decisions.router)
 
 @app.get("/health")
 async def health_check():
     """Health check endpoint to ensure API is running."""
     return {"status": "ok"}
-
-

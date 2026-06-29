@@ -3,6 +3,7 @@ import hashlib
 from fastapi import APIRouter, Request, BackgroundTasks, HTTPException
 from ..core.config import settings
 from ..tasks.pr_tasks import process_merged_pr_task
+from ..tasks.pr_blocker import run_pr_blocker_check
 
 router = APIRouter()
 
@@ -43,7 +44,7 @@ async def github_webhook(request: Request, background_tasks: BackgroundTasks):
             
         # Trigger: PR opened or updated -> Run PR Blocker logic
         elif action in ["opened", "synchronize", "reopened"]:
-            # Normally we'd do: background_tasks.add_task(run_pr_blocker_check, payload["pull_request"])
+            run_pr_blocker_check.delay(payload["pull_request"])
             print(f"DEBUG: Triggered PR Blocker check for PR #{payload['pull_request']['number']}")
             
     return {"status": "ok", "event": event}

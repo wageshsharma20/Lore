@@ -75,3 +75,54 @@ async def collect_pr_data(pr_payload: dict) -> PRData:
         merged_at=merged_at,
         repo_full_name=repo
     )
+
+# Stubs for GitHub PR Status API and Comment API
+async def set_pr_status(repo: str, sha: str, state: str, description: str, target_url: str = None):
+    """
+    Sets the commit status (e.g. pending, success, failure) for the PR Blocker check.
+    state: "pending" | "success" | "failure" | "error"
+    """
+    # Real implementation would call:
+    # POST /repos/{repo}/statuses/{sha}
+    pass
+
+@dataclass
+class Conflict:
+    past_decision: dict
+    conflicting_technology: str
+    severity: str
+
+async def post_pr_blocker_comment(repo: str, pr_number: int, conflicts: List[Conflict], app_url: str):
+    """
+    Posts a comment on the PR detailing the blocked intent.
+    Must include the original decision reason and the author of that decision.
+    """
+    lines = [
+        "## 🧠 Lore — Decision History Check\n",
+        "I found past decisions that may be relevant to this PR. Please review before merging.\n\n"
+    ]
+
+    for c in conflicts:
+        d = c.past_decision
+        
+        # The exact requirement from PDF: must cite reason + author.
+        author = d.get('made_by', {}).get('name', 'Unknown Author') if isinstance(d.get('made_by'), dict) else d.get('decision_author', 'Unknown Author')
+        reason = d.get('reason_summary', d.get('reason', 'No reason provided.'))
+        title = d.get('title', 'Unknown Decision')
+        date = d.get('decision_date', d.get('date', 'unknown date'))
+        
+        lines.append(f"### ⚠️ {title}")
+        lines.append(f"**Blocked:** @{author} decided to do this on {date} because: {reason}")
+        lines.append(f"\n**Conflict detected:** You are introducing `{c.conflicting_technology}`, which conflicts with this decision.")
+        lines.append(f"\n❓ **Has the situation that caused this decision changed?**\n")
+        lines.append(f"[View full decision ->]({app_url}/decisions/{d.get('id', '')})\n")
+        lines.append("---\n")
+
+    lines.append(
+        "_To dismiss this warning, a team lead can approve the PR or "
+        f"[mark the conflict as resolved]({app_url}/pr-check/{pr_number})._"
+    )
+    
+    # Real implementation would call:
+    # POST /repos/{repo}/issues/{pr_number}/comments
+    pass
