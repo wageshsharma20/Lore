@@ -8,8 +8,10 @@ celery_app = Celery(
     "lore_tasks",
     broker=redis_url,
     backend=redis_url,
-    include=["apps.api.tasks.pr_tasks"]
+    include=["apps.api.tasks.pr_tasks", "apps.api.tasks.pr_blocker", "apps.api.tasks.heatmap"]
 )
+
+from celery.schedules import crontab
 
 celery_app.conf.update(
     task_serializer="json",
@@ -17,4 +19,10 @@ celery_app.conf.update(
     result_serializer="json",
     timezone="UTC",
     enable_utc=True,
+    beat_schedule={
+        "nightly_heatmap_recalculation": {
+            "task": "recalculate_knowledge_risk_heatmap",
+            "schedule": crontab(hour=0, minute=0), # Midnight every day
+        }
+    }
 )
