@@ -58,7 +58,7 @@ export async function triggerGitHubSync() {
 }
 
 export async function memifyDecision(decisionId: string, adrUrl: string) {
-  const res = await fetch(`${API_BASE_URL}/api/memify`, {
+  const res = await fetch(`${API_BASE_URL}/adrs/${decisionId}/approve`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({

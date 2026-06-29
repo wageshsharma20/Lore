@@ -70,7 +70,7 @@ export default function AskPage() {
     try {
       const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
       
-      const res = await fetch(`${API_BASE_URL}/api/chat`, {
+      const res = await fetch(`${API_BASE_URL}/ask`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messages: newMessages }),
@@ -104,19 +104,25 @@ export default function AskPage() {
             try {
               const eventData = JSON.parse(dataStr);
               
-              if (eventData.type === 'status') {
-                setLoadingStep(eventData.message); // Will be '' when done searching
-              } else if (eventData.type === 'chunk') {
+              // Handle BOTH our original spec (type/message) and Person A's new spec (status/chunk)
+              const isStatus = eventData.type === 'status' || eventData.status !== undefined;
+              const isChunk = eventData.type === 'chunk' || eventData.chunk !== undefined;
+              const isDone = eventData.type === 'done' || eventData.status === 'Complete';
+
+              if (isDone) {
+                setLoadingStep("");
+                break;
+              } else if (isStatus) {
+                setLoadingStep(eventData.message || eventData.status);
+              } else if (isChunk) {
                 setMessages((prev) => {
                   const updated = [...prev];
                   const lastMsg = updated[updated.length - 1];
                   if (lastMsg.role === 'assistant') {
-                    lastMsg.content += eventData.text;
+                    lastMsg.content += (eventData.text || eventData.chunk);
                   }
                   return updated;
                 });
-              } else if (eventData.type === 'done') {
-                break;
               }
             } catch (e) {
               console.error("Failed to parse SSE JSON:", e);
