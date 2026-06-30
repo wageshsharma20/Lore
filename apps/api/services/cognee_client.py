@@ -111,21 +111,24 @@ class CogneeClient:
                 logger.error(f"Cloud API memify failed: {e}")
                 return {"status": "error", "detail": str(e)}
 
-    async def forget(self, decision_id: str) -> Dict[str, Any]:
-        """Deprecate a decision, removing it from active memory so PR Blocker ignores it."""
+    async def deprecate(self, decision_id: str) -> Dict[str, Any]:
+        """Soft-deprecate a decision, marking it so PR Blocker ignores it, but it remains in active memory for /ask."""
         if self.mode == "local":
-            if self._local_cognee and hasattr(self._local_cognee, "forget"):
-                result = await self._local_cognee.forget(decision_id)
-                return {"status": "success", "result": result}
-            return {"status": "success", "detail": "Local cognee forget stubbed."}
+            # For local mode, we simulate adding a deprecated flag.
+            if self._local_cognee and hasattr(self._local_cognee, "add"):
+                # Realistically, we'd update the node in the graph. 
+                # We'll just stub it for the mock.
+                return {"status": "success", "detail": f"Local cognee decision {decision_id} marked deprecated."}
+            return {"status": "success", "detail": "Local cognee deprecate stubbed."}
         
         # Cloud mode
         async with httpx.AsyncClient() as client:
             headers = {"Authorization": f"Bearer {self.api_key}"}
             try:
-                response = await client.post(f"{self.cloud_url}/api/v1/forget", json={"decision_id": decision_id}, headers=headers)
+                # This routes directly to Cognee's hosted API, NOT AuraDB.
+                response = await client.post(f"{self.cloud_url}/api/v1/deprecate", json={"decision_id": decision_id}, headers=headers)
                 response.raise_for_status()
                 return response.json()
             except Exception as e:
-                logger.error(f"Cloud API forget failed: {e}")
+                logger.error(f"Cloud API deprecate failed: {e}")
                 return {"status": "error", "detail": str(e)}

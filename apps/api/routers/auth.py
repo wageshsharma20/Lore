@@ -59,3 +59,54 @@ async def jira_auth_callback(code: str):
             status_code=500,
             detail={"error": True, "code": 500, "detail": str(e)}
         )
+
+import jwt
+import time
+import os
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.backends import default_backend
+
+async def get_installation_token(installation_id: int) -> str:
+    """
+    Generates a JWT using the GitHub App's private key and fetches an
+    installation access token for the given installation ID.
+    """
+    app_id = os.getenv("GITHUB_APP_ID")
+    private_key_str = os.getenv("GITHUB_APP_PRIVATE_KEY", "").replace("\\n", "\n")
+    
+    if not app_id or not private_key_str:
+        raise ValueError("GITHUB_APP_ID or GITHUB_APP_PRIVATE_KEY not set")
+
+    # 1. Generate the JWT
+    now = int(time.time())
+    payload = {
+        "iat": now - 60,
+        "exp": now + (10 * 60),
+        "iss": app_id
+    }
+    
+    private_key = serialization.load_pem_private_key(
+        private_key_str.encode(),
+        password=None,
+        backend=default_backend()
+    )
+    
+    encoded_jwt = jwt.encode(payload, private_key, algorithm="RS256")
+    
+    # 2. Fetch the Installation Token
+    async with httpx.AsyncClient() as client:
+        headers = {
+            "Authorization": f"Bearer {encoded_jwt}",
+            "Accept": "application/vnd.github.v3+json"
+        }
+        
+        response = await client.post(
+            f"https://api.github.com/app/installations/{installation_id}/access_tokens",
+            headers=headers,
+            timeout=10.0
+        )
+        
+        if response.status_code != 201:
+            raise Exception(f"Failed to get installation token: {response.text}")
+            
+        return response.json()["token"]

@@ -59,6 +59,11 @@ async def find_conflicts_in_graph(intent: PRIntent, repo: str) -> List[Conflict]
             why = result.get("why", result.get("reason_summary", "")).lower()
             what = result.get("what", result.get("decision", "")).lower()
             decision_type = result.get("decision_type", "").lower()
+            is_deprecated = result.get("deprecated", False)
+            
+            # Skip if the decision has been explicitly deprecated by the team
+            if is_deprecated:
+                continue
             
             # Check: was this technology previously REJECTED or REMOVED?
             if "removed" in why or "rejected" in what or decision_type == "removal":

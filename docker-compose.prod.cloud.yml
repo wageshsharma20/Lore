@@ -1,5 +1,5 @@
 # docker-compose.prod.cloud.yml
-# Production deployment config for Cognee Cloud & Neo4j AuraDB
+# Production deployment config for Cognee Cloud API
 
 services:
   api:

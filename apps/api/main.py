@@ -4,7 +4,19 @@ from pydantic import BaseModel
 from .routers import webhooks, auth, chat, adrs, ask, decisions
 import logging
 
+import logging
+import sentry_sdk
+import os
+
 logger = logging.getLogger(__name__)
+
+sentry_dsn = os.getenv("SENTRY_DSN")
+if sentry_dsn:
+    sentry_sdk.init(
+        dsn=sentry_dsn,
+        traces_sample_rate=1.0,
+        profiles_sample_rate=1.0,
+    )
 
 app = FastAPI(
     title="Lore API",

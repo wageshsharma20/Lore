@@ -5,6 +5,7 @@
   <p>An AI-powered graph engine that automatically extracts, tracks, and visualizes architectural decisions from Pull Requests, Jira, and Slack.</p>
   
   [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+  [![CI Pipeline](https://github.com/tarot-club-hackathons/lore/actions/workflows/ci.yml/badge.svg)](https://github.com/tarot-club-hackathons/lore/actions/workflows/ci.yml)
   [![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js)](https://nextjs.org/)
   [![FastAPI](https://img.shields.io/badge/FastAPI-0.103.1-009688?logo=fastapi)](https://fastapi.tiangolo.com/)
   [![Neo4j](https://img.shields.io/badge/Neo4j-5.x-008CC1?logo=neo4j)](https://neo4j.com/)

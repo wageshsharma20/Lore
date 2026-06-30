@@ -105,17 +105,17 @@ async def deprecate_decision(decision_id: str):
     client = CogneeClient()
     
     try:
-        forget_res = await client.forget(decision_id)
-        # Re-cognify after forgetting
+        deprecate_res = await client.deprecate(decision_id)
+        # Re-cognify after deprecating to update graph weights
         cognify_res = await client.cognify("architecture_decisions")
         
         return DeprecateResponse(
             status="success",
             decision_id=decision_id,
-            forget_result={"forget": forget_res, "cognify": cognify_res}
+            forget_result={"deprecate": deprecate_res, "cognify": cognify_res}
         )
     except Exception as e:
-        logger.error(f"Failed to forget/cognify after deprecating decision {decision_id}: {e}")
+        logger.error(f"Failed to deprecate/cognify decision {decision_id}: {e}")
         raise HTTPException(
             status_code=500, 
             detail={"error": True, "code": 500, "detail": str(e)}
