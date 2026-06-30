@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import { DotPattern } from "@/registry/magicui/dot-pattern";
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -145,15 +147,18 @@ export default function AskPage() {
   };
 
   return (
-    <main className="max-w-4xl mx-auto h-[calc(100vh-80px)] flex flex-col relative pt-8">
+    <main className="mx-36 h-[calc(100vh-80px)] flex flex-col relative pt-8">
       {/* Glow Effects */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-[100px] z-[-1]"></div>
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-[100px] z-[-1]"></div>
+      <DotPattern
+        className={cn(
+          "[mask-image:radial-gradient(800px_circle_at_center,white,transparent)] z-[-1]"
+        )}
+      />
 
       {messages.length === 0 ? (
         <div className="flex-1 flex flex-col justify-center items-center">
           <div className="w-full text-center mb-10">
-            <h1 className="text-5xl font-black mb-4 bg-gradient-to-r from-white via-gray-200 to-gray-500 bg-clip-text text-transparent drop-shadow-md">Ask Lore</h1>
+            <h1 className="text-5xl font-['Arial'] font-bold mb-4 text-white">Ask Lore</h1>
             <p className="text-gray-400 text-xl font-light">Chat with your team's engineering history.</p>
           </div>
 
@@ -170,7 +175,7 @@ export default function AskPage() {
                   key={index} 
                   variant="secondary" 
                   onClick={() => handleAsk(q)}
-                  className="cursor-pointer bg-white/5 hover:bg-white/10 text-gray-300 px-4 py-2 text-sm font-light border border-white/10 hover:border-primary/50 transition-all shadow-sm"
+                  className="cursor-pointer bg-white/5 hover:bg-white/10 text-gray-300 px-6 py-3 text-base font-light border border-white/10 hover:border-primary/50 transition-all shadow-sm"
                 >
                   {q}
                 </Badge>
@@ -182,14 +187,14 @@ export default function AskPage() {
         <div className="flex-1 overflow-y-auto mb-4 p-4 space-y-6">
           {messages.map((msg, idx) => (
             <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[80%] rounded-2xl p-5 shadow-lg ${
+              <div className={`max-w-[80%]  p-5 shadow-lg ${
                 msg.role === 'user' 
-                  ? 'bg-primary/90 text-white rounded-br-none' 
-                  : 'bg-black/60 backdrop-blur-xl border border-white/10 text-gray-200 rounded-bl-none'
+                  ? 'bg-primary/90 text-white -none' 
+                  : 'bg-black/60 backdrop-blur-xl border border-white/10 text-gray-200 -none'
               }`}>
                 {msg.role === 'assistant' && (
                   <div className="flex items-center gap-2 mb-2">
-                    <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center border border-primary/30">
+                    <div className="w-6 h-6 bg-primary/20 flex items-center justify-center border border-primary/30">
                       <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
                     </div>
                     <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Lore</span>
@@ -202,10 +207,10 @@ export default function AskPage() {
           
           {loadingStep && (
             <div className="flex justify-start">
-              <div className="max-w-[80%] rounded-2xl p-4 bg-black/40 backdrop-blur-xl border border-white/5 rounded-bl-none flex items-center gap-4">
+              <div className="max-w-[80%] p-4 bg-black/40 backdrop-blur-xl border border-white/5 -none flex items-center gap-4">
                 <div className="relative w-6 h-6">
-                  <div className="absolute inset-0 rounded-full border-2 border-primary/20"></div>
-                  <div className="absolute inset-0 rounded-full border-2 border-primary border-t-transparent animate-spin"></div>
+                  <div className="absolute inset-0 border-2 border-primary/20"></div>
+                  <div className="absolute inset-0 border-2 border-primary border-t-transparent animate-spin"></div>
                 </div>
                 <p className="text-primary text-sm font-medium tracking-wide animate-pulse">
                   {loadingStep}
@@ -218,7 +223,7 @@ export default function AskPage() {
             <div className="flex justify-center mt-2 mb-4">
               <button 
                 onClick={() => handleAsk(lastQuery)}
-                className="bg-red-500/20 text-red-300 border border-red-500/50 px-4 py-2 rounded-lg hover:bg-red-500/30 transition-colors flex items-center gap-2 text-sm shadow-lg"
+                className="bg-red-500/20 text-red-300 border border-red-500/50 px-4 py-2 hover:bg-red-500/30 transition-colors flex items-center gap-2 text-sm shadow-lg"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
                 Retry Connection
@@ -232,20 +237,19 @@ export default function AskPage() {
 
       <div className="p-4 bg-transparent shrink-0">
         <div className="relative max-w-4xl mx-auto group">
-          <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-blue-500 rounded-2xl blur opacity-30 group-hover:opacity-60 transition duration-500"></div>
           <input 
             type="text" 
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleAsk(query)}
             placeholder="Ask a question or follow-up..." 
-            className="relative w-full p-5 pr-14 text-lg bg-black/80 backdrop-blur-xl border border-white/10 text-white placeholder-gray-500 rounded-2xl shadow-2xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+            className="relative w-full p-5 pr-14 text-lg bg-white border border-gray-300 text-black placeholder-gray-400 shadow-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
             disabled={isTyping}
           />
           <button 
             onClick={() => handleAsk(query)}
             disabled={isTyping || !query.trim()}
-            className="absolute right-4 top-4 p-2 bg-primary/90 text-white rounded-xl hover:bg-primary hover:scale-105 hover:shadow-[0_0_15px_rgba(168,85,247,0.5)] transition-all disabled:opacity-50 disabled:hover:scale-100 disabled:hover:shadow-none"
+            className="absolute right-4 top-4 p-2 bg-[#0052ff]/90 text-white hover:bg-[#0052ff] hover:scale-105 hover:shadow-[0_0_15px_rgba(0,82,255,0.5)] transition-all disabled:opacity-50 disabled:hover:scale-100 disabled:hover:shadow-none"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
           </button>

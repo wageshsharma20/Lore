@@ -6,6 +6,7 @@ import { getAdrs } from "@/lib/api";
 import { getAdrDrafts } from "@/actions/adr";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { HeartbeatLoader } from "@/components/ui/heartbeat-loader";
 
 export default function AdrsPage() {
   const { data: adrs = [], isLoading: loadingAdrs } = useQuery({
@@ -24,10 +25,10 @@ export default function AdrsPage() {
 
   if (loadingAdrs || loadingDrafts) {
     return (
-      <main className="p-8 max-w-4xl mx-auto min-h-[80vh] flex flex-col justify-start items-center">
-        <div className="mt-20 flex flex-col items-center gap-4">
-          <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-gray-500 animate-pulse">Loading Architecture Decision Records...</p>
+      <main className="p-8 mx-36 min-h-[80vh] flex flex-col justify-start items-center">
+        <div className="mt-20 flex flex-col items-center gap-6">
+          <HeartbeatLoader />
+          <p className="text-white/40 font-mono tracking-widest text-sm uppercase animate-pulse">Loading Architecture Decision Records...</p>
         </div>
       </main>
     );
@@ -36,13 +37,13 @@ export default function AdrsPage() {
   return (
     <main className="p-8 max-w-4xl mx-auto min-h-[80vh] flex flex-col justify-start items-center">
       <div className="w-full mb-12">
-        <h1 className="text-4xl font-bold mb-4">Architecture Decision Records</h1>
+        <h1 className="text-4xl font-['Arial'] font-bold mb-4 text-white">Architecture Decision Records</h1>
         <p className="text-gray-500 text-lg">Automatically generated and maintained by Lore.</p>
       </div>
 
       {allAdrs.length === 0 ? (
-        <div className="p-12 text-center bg-gray-50 border border-dashed border-gray-300 rounded-lg w-full">
-          <div className="w-16 h-16 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center mx-auto mb-6">
+        <div className="p-12 text-center bg-gray-50 border border-dashed border-gray-300 w-full">
+          <div className="w-16 h-16 bg-purple-100 text-purple-600 flex items-center justify-center mx-auto mb-6">
             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="12" x2="12" y1="18" y2="12"/><line x1="9" x2="15" y1="15" y2="15"/></svg>
           </div>
           <h2 className="text-2xl font-semibold text-gray-800 mb-4">No ADRs Drafted Yet</h2>

@@ -27,43 +27,43 @@ export default function SettingsPage() {
   ];
 
   return (
-    <main className="p-8 max-w-4xl mx-auto min-h-[80vh]">
-      <div className="mb-10 border-b pb-8">
-        <h1 className="text-3xl font-bold mb-2">Settings</h1>
-        <p className="text-gray-500">Manage your workspace integrations and preferences.</p>
+    <main className="p-8 mx-36 min-h-[80vh]">
+      <div className="mb-10 border-b border-white/10 pb-8">
+        <h1 className="text-3xl font-['Arial'] font-bold mb-2 text-white">Settings</h1>
+        <p className="text-white/40">Manage your workspace integrations and preferences.</p>
       </div>
 
       <section>
-        <h2 className="text-xl font-semibold mb-6">Integrations</h2>
+        <h2 className="text-xl font-semibold mb-6 text-white">Integrations</h2>
         
         <div className="space-y-4">
           {integrations.map((integration) => (
-            <div key={integration.name} className="flex items-center justify-between p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
+            <div key={integration.name} className="flex items-center justify-between p-6 bg-white/5 backdrop-blur-md border border-white/10 hover:bg-white/10 transition-colors">
               <div className="flex items-start gap-4">
-                <div className="p-3 bg-gray-50 rounded-lg border border-gray-100 text-gray-700">
+                <div className="p-3 bg-white/5 border border-white/10 text-white/60">
                   {integration.icon}
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg">{integration.name}</h3>
-                  <p className="text-gray-500 text-sm mt-1">{integration.description}</p>
+                  <h3 className="font-bold text-lg text-white">{integration.name}</h3>
+                  <p className="text-white/40 text-sm mt-1">{integration.description}</p>
                 </div>
               </div>
               
               <div className="flex items-center gap-4">
                 {integration.connected ? (
-                  <span className="flex items-center gap-1.5 text-sm font-medium text-green-600 bg-green-50 px-2.5 py-1 rounded-full">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                  <span className="flex items-center gap-1.5 text-sm font-medium text-emerald-400 bg-emerald-500/10 px-2.5 py-1 border border-emerald-500/20">
+                    <span className="w-1.5 h-1.5 bg-emerald-500"></span>
                     Connected
                   </span>
                 ) : (
-                  <span className="text-sm font-medium text-gray-400">Not connected</span>
+                  <span className="text-sm font-medium text-white/30">Not connected</span>
                 )}
                 
                 <button 
-                  className={`px-4 py-2 rounded-md font-medium text-sm transition-colors ${
+                  className={`px-4 py-2 font-medium text-sm transition-colors ${
                     integration.connected 
-                      ? 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50' 
-                      : 'bg-black text-white hover:bg-gray-800'
+                      ? 'bg-white/5 border border-white/10 text-white/60 hover:bg-white/10 hover:text-white' 
+                      : 'bg-[#0052ff] text-white hover:bg-[#0052ff]/80'
                   }`}
                 >
                   {integration.connected ? 'Disconnect' : 'Connect'}

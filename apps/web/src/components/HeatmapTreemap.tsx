@@ -133,7 +133,7 @@ export function HeatmapTreemap({ data }: HeatmapTreemapProps) {
       {/* Tooltip */}
       {tooltip.visible && tooltip.content && (
         <div 
-          className="absolute z-50 bg-black/80 backdrop-blur-xl border border-white/20 shadow-2xl rounded-xl p-5 text-sm pointer-events-none transform -translate-x-1/2 -translate-y-full text-white"
+          className="absolute z-50 bg-black/80 backdrop-blur-xl border border-white/20 shadow-2xl p-5 text-sm pointer-events-none transform -translate-x-1/2 -translate-y-full text-white"
           style={{ 
             left: tooltip.x - (containerRef.current?.getBoundingClientRect().left || 0), 
             top: tooltip.y - (containerRef.current?.getBoundingClientRect().top || 0) - 20,
@@ -143,11 +143,11 @@ export function HeatmapTreemap({ data }: HeatmapTreemapProps) {
           <div className="font-bold text-xl border-b border-white/10 pb-3 mb-3 bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">{tooltip.content.name}</div>
           
           {tooltip.content.loneContributor && (
-            <div className="bg-destructive/20 text-red-400 p-3 rounded-lg mb-4 flex items-start gap-3 border border-destructive/50 shadow-[0_0_15px_rgba(220,38,38,0.2)]">
+            <div className="bg-destructive/20 text-red-400 p-3 mb-4 flex items-start gap-3 border border-destructive/50 shadow-[0_0_15px_rgba(220,38,38,0.2)]">
               <span className="text-2xl animate-pulse">🚨</span>
               <div>
                 <strong className="block text-red-300">Critical Silo Risk</strong>
-                <span className="text-xs text-red-200">Last 10 decisions traced to lone author <b className="text-white bg-black/50 px-1 rounded">{tooltip.content.loneContributor}</b></span>
+                <span className="text-xs text-red-200">Last 10 decisions traced to lone author <b className="text-white bg-black/50 px-1">{tooltip.content.loneContributor}</b></span>
               </div>
             </div>
           )}
@@ -161,7 +161,7 @@ export function HeatmapTreemap({ data }: HeatmapTreemapProps) {
             <div className="flex flex-col"><span className="text-xs text-gray-500 uppercase">Age</span> <span className="font-semibold text-white">{tooltip.content.factors.age}%</span></div>
           </div>
           
-          <div className="mt-4 pt-3 border-t border-white/10 font-bold flex justify-between items-center bg-white/5 -mx-5 -mb-5 px-5 py-3 rounded-b-xl">
+          <div className="mt-4 pt-3 border-t border-white/10 font-bold flex justify-between items-center bg-white/5 -mx-5 -mb-5 px-5 py-3 -xl">
             <span className="uppercase text-xs tracking-wider text-gray-400">Overall Risk</span>
             <span className={`text-xl ${tooltip.content.overallRisk >= 80 ? 'text-red-400 drop-shadow-[0_0_8px_rgba(248,113,113,0.8)]' : 'text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.8)]'}`}>
               {tooltip.content.overallRisk}%

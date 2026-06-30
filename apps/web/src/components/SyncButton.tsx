@@ -21,7 +21,7 @@ export function SyncButton() {
     <button 
       onClick={handleSync}
       disabled={loading}
-      className="bg-black text-white px-5 py-2 rounded-md font-medium hover:bg-gray-800 disabled:opacity-50 transition-colors shadow-sm"
+      className="bg-black text-white px-5 py-2 font-medium hover:bg-gray-800 disabled:opacity-50 transition-colors shadow-sm"
     >
       {loading ? "Syncing..." : "Sync with GitHub"}
     </button>

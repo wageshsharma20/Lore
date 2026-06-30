@@ -34,12 +34,12 @@ export default function DecisionDetail({ params }: { params: Promise<{ id: strin
         </div>
       </div>
 
-      <section className="bg-gray-50 p-6 rounded-lg mb-8 border border-gray-100">
+      <section className="bg-gray-50 p-6 mb-8 border border-gray-100">
         <h2 className="text-lg font-semibold mb-2">What was decided?</h2>
         <p className="text-gray-700 leading-relaxed">{decision.what}</p>
       </section>
 
-      <section className="bg-blue-50 p-6 rounded-lg mb-8 border border-blue-100">
+      <section className="bg-blue-50 p-6 mb-8 border border-blue-100">
         <h2 className="text-lg font-semibold mb-2 text-blue-900">Why was this decided? (The Reason)</h2>
         <p className="text-blue-800 italic leading-relaxed">"{decision.reason}"</p>
       </section>

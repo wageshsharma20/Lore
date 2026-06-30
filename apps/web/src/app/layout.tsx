@@ -1,18 +1,12 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import { Navbar } from "@/components/Navbar";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { QueryProvider } from "@/components/QueryProvider";
 import "./globals.css";
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-});
-
 export const metadata: Metadata = {
-  title: "Lore: Engineering Historian",
-  description: "Your codebase's memory",
+  title: "Lore - Institutional Memory for Engineering Teams",
+  description: "Knowledge management graph powered by your codebase.",
 };
 
 export default function RootLayout({
@@ -23,7 +17,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} h-full antialiased`}
+      className="h-full antialiased"
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col font-sans bg-background text-foreground">

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { getPrCheck } from '@/lib/api';
 import { useQuery } from '@tanstack/react-query';
 import { use, useEffect, useState } from "react";
+import { HeartbeatLoader } from "@/components/ui/heartbeat-loader";
 
 export default function PRCheckPage({ searchParams }: { searchParams: Promise<{ pr?: string }> }) {
   // We need to unwrap the Promise for searchParams in Next.js 15+ 
@@ -31,9 +32,9 @@ export default function PRCheckPage({ searchParams }: { searchParams: Promise<{ 
 
   if (isLoading) {
     return (
-      <main className="p-8 max-w-2xl mx-auto min-h-[80vh] flex flex-col justify-center items-center text-center">
-        <div className="w-12 h-12 border-4 border-gray-200 border-t-black rounded-full animate-spin mb-4"></div>
-        <p className="text-gray-500 font-medium animate-pulse">Verifying PR architecture...</p>
+      <main className="p-8 mx-36 min-h-[80vh] flex flex-col justify-center items-center text-center">
+        <HeartbeatLoader />
+        <p className="text-white/40 font-mono tracking-widest text-sm uppercase animate-pulse mt-6">Verifying PR architecture...</p>
       </main>
     );
   }
@@ -60,11 +61,11 @@ export default function PRCheckPage({ searchParams }: { searchParams: Promise<{ 
         <div className={`px-6 py-4 flex items-center justify-between border-b ${isBlocked ? 'bg-red-50 border-red-100' : 'bg-green-50 border-green-100'}`}>
           <div className="flex items-center gap-3">
             {isBlocked ? (
-              <div className="w-10 h-10 bg-red-100 text-red-600 rounded-full flex items-center justify-center">
+              <div className="w-10 h-10 bg-red-100 text-red-600 flex items-center justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
               </div>
             ) : (
-              <div className="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
+              <div className="w-10 h-10 bg-green-100 text-green-600 flex items-center justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
               </div>
             )}
@@ -86,7 +87,7 @@ export default function PRCheckPage({ searchParams }: { searchParams: Promise<{ 
           <CardContent className="p-8">
             <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Original Decision Context</h3>
             
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 relative">
+            <div className="bg-gray-50 border border-gray-200 p-6 relative">
               <div className="absolute -top-3 left-6 bg-white px-2 text-sm text-gray-500 font-medium">Historical Record</div>
               
               <p className="text-gray-800 text-lg leading-relaxed mb-6 font-medium">
@@ -94,7 +95,7 @@ export default function PRCheckPage({ searchParams }: { searchParams: Promise<{ 
               </p>
               
               {check.conflict_path && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded text-sm text-red-800 font-mono">
+                <div className="mb-6 p-4 bg-red-50 border border-red-100 text-sm text-red-800 font-mono">
                   <div className="font-semibold mb-2">Conflict Path:</div>
                   {check.conflict_path}
                 </div>
@@ -105,7 +106,7 @@ export default function PRCheckPage({ searchParams }: { searchParams: Promise<{ 
                   <span className="text-gray-500">Decided by:</span>
                   <Badge variant="secondary" className="bg-gray-200 hover:bg-gray-200 text-gray-800 border-none shadow-sm">{check.author}</Badge>
                 </div>
-                <div className="w-1 h-1 rounded-full bg-gray-300"></div>
+                <div className="w-1 h-1 bg-gray-300"></div>
                 {check.original_decision_id !== "none" ? (
                   <Link href={`/decisions/${check.original_decision_id}`} className="text-blue-600 hover:underline">
                     View Full Decision
@@ -116,7 +117,7 @@ export default function PRCheckPage({ searchParams }: { searchParams: Promise<{ 
               </div>
             </div>
 
-            <div className="mt-8 p-4 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-3">
+            <div className="mt-8 p-4 bg-amber-50 border border-amber-200 flex items-start gap-3">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-600 mt-0.5"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
               <div>
                 <p className="text-amber-800 font-medium">Action Required</p>

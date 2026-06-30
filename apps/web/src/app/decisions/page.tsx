@@ -22,7 +22,7 @@ export default function DecisionsList() {
 
       <div className="flex flex-col gap-4">
         {decisions.length === 0 && (
-          <div className="p-12 text-center bg-gray-50 border border-dashed border-gray-300 rounded-lg">
+          <div className="p-12 text-center bg-gray-50 border border-dashed border-gray-300">
             <h3 className="text-xl font-medium text-gray-700 mb-2">No decisions captured yet.</h3>
             <p className="text-gray-500">Merge a PR with a Jira reference to create your first memory.</p>
           </div>

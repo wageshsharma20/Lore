@@ -49,13 +49,13 @@ export default async function AdrDetailPage({ params }: { params: { id: string }
         </div>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
-        <div className="bg-gray-50 border-b border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 flex gap-4 rounded-t-lg">
+      <div className="bg-white border border-gray-200 shadow-sm">
+        <div className="bg-gray-50 border-b border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 flex gap-4 -lg">
           <button className="text-black font-semibold border-b-2 border-black pb-1">Markdown Editor</button>
           <button className="text-gray-400 hover:text-gray-600">Preview</button>
         </div>
         <textarea 
-          className="w-full h-96 p-6 outline-none text-gray-800 font-mono text-sm leading-relaxed rounded-b-lg resize-y bg-gray-50/30 focus:bg-white transition-colors"
+          className="w-full h-96 p-6 outline-none text-gray-800 font-mono text-sm leading-relaxed -lg resize-y bg-gray-50/30 focus:bg-white transition-colors"
           defaultValue={adr.content}
         />
       </div>

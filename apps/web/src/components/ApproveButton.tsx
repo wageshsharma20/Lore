@@ -44,7 +44,7 @@ export function ApproveButton({ draftId }: { draftId: string }) {
         href={prUrl} 
         target="_blank" 
         rel="noreferrer"
-        className="bg-green-600 text-white px-4 py-2 rounded-md font-medium hover:bg-green-500 transition-colors shadow-sm text-sm"
+        className="bg-green-600 text-white px-4 py-2 font-medium hover:bg-green-500 transition-colors shadow-sm text-sm"
       >
         View Pull Request
       </a>
@@ -56,14 +56,14 @@ export function ApproveButton({ draftId }: { draftId: string }) {
       <button 
         onClick={handleReject}
         disabled={loading || rejecting}
-        className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-md font-medium hover:bg-gray-50 transition-colors shadow-sm text-sm disabled:opacity-50"
+        className="bg-white border border-gray-300 text-gray-700 px-4 py-2 font-medium hover:bg-gray-50 transition-colors shadow-sm text-sm disabled:opacity-50"
       >
         {rejecting ? "Rejecting..." : "Reject"}
       </button>
       <button 
         onClick={handleApprove}
         disabled={loading || rejecting}
-        className="bg-black text-white px-4 py-2 rounded-md font-medium hover:bg-gray-800 transition-colors shadow-sm text-sm disabled:opacity-50"
+        className="bg-black text-white px-4 py-2 font-medium hover:bg-gray-800 transition-colors shadow-sm text-sm disabled:opacity-50"
       >
         {loading ? "Generating PR..." : "Approve & Finalize"}
       </button>
