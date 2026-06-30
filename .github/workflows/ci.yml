@@ -47,7 +47,7 @@ jobs:
         run: |
           if [ -d "apps/api" ]; then
             cd apps/api
-            PYTHONPATH="." pytest tests/
+            PYTHONPATH="../.." pytest tests/
           else
             echo "apps/api not found yet, skipping."
           fi
