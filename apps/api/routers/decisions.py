@@ -1,11 +1,13 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Depends
 from pydantic import BaseModel
 import os
 import json
 import logging
-from anthropic import AsyncAnthropic
+from google import genai
+from google.genai import types
 
 from ..services.cognee_client import CogneeClient
+from .auth import verify_token
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -20,7 +22,7 @@ class DecisionSearchResponse(BaseModel):
 @router.get("/decisions/search", response_model=DecisionSearchResponse)
 async def search_decisions(q: str = Query(...)):
     """
-    Decision Memory Backend: Graph search + Claude answer endpoint.
+    Decision Memory Backend: Graph search + Gemini answer endpoint.
     Returns a specific JSON schema with attribution.
     """
     logger.info(f"Searching decisions for query: {q}")
@@ -44,8 +46,8 @@ async def search_decisions(q: str = Query(...)):
             confidence=0.0
         )
 
-    # Use Claude to formulate the exact schema
-    anthropic_client = AsyncAnthropic(api_key=os.getenv("ANTHROPIC_API_KEY", "dummy-key"))
+    # Use Gemini to formulate the exact schema
+    gemini_client = genai.Client(api_key=os.getenv("GEMINI_API_KEY", "dummy-key"))
     
     prompt = (
         f"Based on the following engineering decision records retrieved from our knowledge graph:\n\n"
@@ -58,36 +60,22 @@ async def search_decisions(q: str = Query(...)):
     )
     
     try:
-        response = await anthropic_client.messages.create(
-            model="claude-3-5-sonnet-20240620",
-            max_tokens=512,
-            system="You are an AI assistant parsing architectural decisions.",
-            messages=[{"role": "user", "content": prompt}],
-            tools=[
-                {
-                    "name": "respond_with_decision",
-                    "description": "Return the final answer and metadata about the decision.",
-                    "input_schema": DecisionSearchResponse.model_json_schema()
-                }
-            ],
-            tool_choice={"type": "tool", "name": "respond_with_decision"}
+        response = await gemini_client.aio.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+                response_schema=DecisionSearchResponse,
+                system_instruction="You are an AI assistant parsing architectural decisions.",
+                temperature=0.1
+            )
         )
         
-        for block in response.content:
-            if block.type == "tool_use" and block.name == "respond_with_decision":
-                return DecisionSearchResponse(**block.input)
-                
-        # Fallback if no tool use found
-        return DecisionSearchResponse(
-            answer="Could not parse the decision records clearly.",
-            decision_author="Unknown",
-            decision_date="Unknown",
-            source_pr_url="Unknown",
-            confidence=0.0
-        )
+        parsed = DecisionSearchResponse.model_validate_json(response.text)
+        return parsed
 
     except Exception as e:
-        logger.error(f"Claude answer generation failed: {e}")
+        logger.error(f"Gemini answer generation failed: {e}")
         raise HTTPException(
             status_code=500, 
             detail={"error": True, "code": 500, "detail": "Answer generation failed"}
@@ -99,9 +87,9 @@ class DeprecateResponse(BaseModel):
     forget_result: dict
 
 @router.post("/decisions/{decision_id}/deprecate", response_model=DeprecateResponse)
-async def deprecate_decision(decision_id: str):
+async def deprecate_decision(decision_id: str, token_payload: dict = Depends(verify_token)):
     """Deprecates an overridden decision, removing it from active memory so PR Blocker stops firing."""
-    logger.info(f"Deprecating decision {decision_id}. Triggering forget.")
+    logger.info(f"Deprecating decision {decision_id}. Triggering forget. Auth payload: {token_payload}")
     client = CogneeClient()
     
     try:

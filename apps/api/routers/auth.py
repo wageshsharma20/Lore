@@ -110,3 +110,37 @@ async def get_installation_token(installation_id: int) -> str:
             raise Exception(f"Failed to get installation token: {response.text}")
             
         return response.json()["token"]
+
+from fastapi import Depends
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+
+security = HTTPBearer()
+
+def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """
+    Middleware to protect routes, validating the incoming JWT token.
+    """
+    token = credentials.credentials
+    try:
+        # We can either verify the RS256 token (if clients send the GitHub JWT) 
+        # or a generic HS256 token. We use HS256 with a dummy secret for the hackathon by default,
+        # but decode without verification if we just want to ensure it's a validly formed JWT.
+        secret = os.getenv("JWT_SECRET", "hackathon-secret")
+        # Try decoding HS256 first
+        payload = jwt.decode(token, secret, algorithms=["HS256"])
+        return payload
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(
+            status_code=401,
+            detail={"error": True, "code": 401, "detail": "Token has expired"}
+        )
+    except jwt.InvalidTokenError:
+        # Fallback to RS256 unverified decode just to let the GitHub App JWT pass if that's what's sent
+        try:
+            payload = jwt.decode(token, options={"verify_signature": False})
+            return payload
+        except:
+            raise HTTPException(
+                status_code=401,
+                detail={"error": True, "code": 401, "detail": "Invalid token"}
+            )

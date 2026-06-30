@@ -1,20 +1,19 @@
 import pytest
-from apps.api.services.claude import extract_decisions
+from apps.api.services.gemini_service import extract_decisions
 from apps.api.services.github import PRData
 
 from unittest.mock import patch, AsyncMock
+import json
 
 @pytest.mark.asyncio
-@patch("apps.api.services.claude.AsyncAnthropic")
-async def test_decision_extractor_outputs(mock_anthropic_class):
+@patch("apps.api.services.gemini_service.genai.Client")
+async def test_decision_extractor_outputs(mock_genai_client_class):
     mock_client = AsyncMock()
-    mock_anthropic_class.return_value = mock_client
+    mock_genai_client_class.return_value = mock_client
     
-    # Mock Claude response with tool use
-    class MockBlock:
-        type = "tool_use"
-        name = "record_decisions"
-        input = {
+    # Mock Gemini response with structured output
+    class MockResponse:
+        text = json.dumps({
             "decisions": [
                 {
                     "title": "Migrate to Postgres",
@@ -27,12 +26,9 @@ async def test_decision_extractor_outputs(mock_anthropic_class):
                     "confidence_score": 0.9
                 }
             ]
-        }
-    
-    class MockResponse:
-        content = [MockBlock()]
+        })
         
-    mock_client.messages.create.return_value = MockResponse()
+    mock_client.aio.models.generate_content.return_value = MockResponse()
 
     pr_data = PRData(
         title="Migrate to Postgres",

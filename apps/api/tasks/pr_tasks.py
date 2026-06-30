@@ -3,7 +3,7 @@ import logging
 from typing import Dict, Any
 from ..core.celery_app import celery_app
 from ..services.github import PRData
-from ..services.claude import detect_architectural_intent, extract_decisions
+from ..services.gemini_service import detect_architectural_intent, extract_decisions
 from ..services.cognee_client import CogneeClient
 
 logger = logging.getLogger(__name__)
