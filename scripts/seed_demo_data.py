@@ -70,18 +70,19 @@ async def seed_data():
         "source_pr": "https://github.com/org/repo/pull/105"
     }
 
-    # --- 3. Lone-Contributor Silo (Red Heatmap Target) ---
-    # We purposefully assign 12 major decisions to "dave" around the "Billing Module"
+    # --- 3. Lone-Contributor Silo & Ghost User (Red Heatmap Target) ---
+    # We purposefully assign 12 major decisions to "ghost_user" around the "Billing Module".
+    # ghost_user represents an employee who left the company (not in the teams table).
     silo_decisions = []
     for i in range(1, 13):
         silo_decisions.append({
             "title": f"Billing Module Architecture Update {i}",
             "decision": f"Refactored billing engine component {i}.",
             "reason_summary": "Required for the new subscription tiers.",
-            "made_by": {"type": "Developer", "name": "dave"}, # All Dave!
+            "made_by": {"type": "Developer", "name": "ghost_user"}, # Departed employee
             "contributing_authors": [], # No one else understands it
             "alternatives_considered": [],
-            "consequences": ["System is highly coupled to Dave's knowledge"],
+            "consequences": ["System is highly coupled to ghost_user's knowledge"],
             "confidence_score": 0.90,
             "source_pr": f"https://github.com/org/repo/pull/{200+i}"
         })

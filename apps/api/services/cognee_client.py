@@ -91,3 +91,41 @@ class CogneeClient:
             except Exception as e:
                 logger.error(f"Cloud API search failed: {e}")
                 return []
+
+    async def memify(self, decision_id: str) -> Dict[str, Any]:
+        """Enrich and strengthen the confidence score of a memory node."""
+        if self.mode == "local":
+            if self._local_cognee and hasattr(self._local_cognee, "memify"):
+                result = await self._local_cognee.memify(decision_id)
+                return {"status": "success", "result": result}
+            return {"status": "success", "detail": "Local cognee memify stubbed."}
+        
+        # Cloud mode
+        async with httpx.AsyncClient() as client:
+            headers = {"Authorization": f"Bearer {self.api_key}"}
+            try:
+                response = await client.post(f"{self.cloud_url}/api/v1/memify", json={"decision_id": decision_id}, headers=headers)
+                response.raise_for_status()
+                return response.json()
+            except Exception as e:
+                logger.error(f"Cloud API memify failed: {e}")
+                return {"status": "error", "detail": str(e)}
+
+    async def forget(self, decision_id: str) -> Dict[str, Any]:
+        """Deprecate a decision, removing it from active memory so PR Blocker ignores it."""
+        if self.mode == "local":
+            if self._local_cognee and hasattr(self._local_cognee, "forget"):
+                result = await self._local_cognee.forget(decision_id)
+                return {"status": "success", "result": result}
+            return {"status": "success", "detail": "Local cognee forget stubbed."}
+        
+        # Cloud mode
+        async with httpx.AsyncClient() as client:
+            headers = {"Authorization": f"Bearer {self.api_key}"}
+            try:
+                response = await client.post(f"{self.cloud_url}/api/v1/forget", json={"decision_id": decision_id}, headers=headers)
+                response.raise_for_status()
+                return response.json()
+            except Exception as e:
+                logger.error(f"Cloud API forget failed: {e}")
+                return {"status": "error", "detail": str(e)}

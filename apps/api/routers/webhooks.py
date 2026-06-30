@@ -26,7 +26,10 @@ async def github_webhook(request: Request, background_tasks: BackgroundTasks):
     
     # Security: Always verify webhook signature to prevent spoofed events
     if not verify_github_signature(body, signature, settings.GITHUB_WEBHOOK_SECRET):
-        raise HTTPException(status_code=401, detail="Invalid GitHub signature")
+        raise HTTPException(
+            status_code=401, 
+            detail={"error": True, "code": 401, "detail": "Invalid GitHub signature"}
+        )
         
     payload = await request.json()
     event = request.headers.get("X-GitHub-Event")

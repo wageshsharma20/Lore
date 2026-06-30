@@ -16,9 +16,7 @@ class AskRequest(BaseModel):
 
 @router.post("/ask")
 async def ask_lore(request: AskRequest):
-    """
-    Queries the Knowledge Graph using the GRAPH_COMPLETION pipeline and streams SSE.
-    """
+    """Queries the Knowledge Graph using the hybrid graph-vector pipeline and streams SSE."""
     logger.info(f"Querying graph: {request.query}")
     
     async def event_generator():
@@ -28,7 +26,7 @@ async def ask_lore(request: AskRequest):
             yield f'data: {json.dumps({"status": "Searching Graph..."})}\n\n'
             
             # This is the blocking call under the hood that takes a few seconds
-            search_results = await client.search(request.query, search_type="GRAPH_COMPLETION")
+            search_results = await client.search(request.query, search_type="hybrid")
             
             # Yield generation status
             yield f'data: {json.dumps({"status": "Generating..."})}\n\n'
@@ -55,6 +53,6 @@ async def ask_lore(request: AskRequest):
 
         except Exception as e:
             logger.error(f"Failed to query graph: {e}")
-            yield f'data: {json.dumps({"error": str(e)})}\n\n'
+            yield f'data: {json.dumps({"error": True, "code": 500, "detail": str(e)})}\n\n'
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")

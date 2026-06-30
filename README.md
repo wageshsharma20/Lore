@@ -71,6 +71,30 @@ uvicorn main:app --reload
 # The backend will run on http://localhost:8000
 ```
 
+## ☁️ Deployment Modes (Day 9)
+
+Lore supports a Dual Deployment architecture, meaning the **exact same codebase** powers both a fully open-source local environment and a massively scalable cloud environment. 
+
+### 1. Cloud Mode (Production)
+For live production, Lore uses Cognee Cloud.
+Simply set the following environment variables:
+`COGNEE_MODE=cloud`
+`COGNEE_API_KEY=your_key`
+`COGNEE_CLOUD_URL=https://api.cognee.ai`
+
+Then run:
+```bash
+docker-compose -f docker-compose.prod.cloud.yml up -d
+```
+
+### 2. Local Mode (On-Premise Privacy)
+For strict data privacy, Lore can run Cognee entirely locally (zero external dependencies). This uses the open-source python package to build the knowledge graph on your own Neo4j instance.
+Simply set `COGNEE_MODE=local` and run:
+```bash
+docker-compose -f docker-compose.prod.local.yml up -d
+```
+*Note: This spins up a local Neo4j container automatically.*
+
 ## 🤝 Contributing
 For the Hackathon, please ensure any architectural changes you make are tagged with the relevant Jira ticket in your PR description so Lore can track it!
 

@@ -1,5 +1,5 @@
 import httpx
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import RedirectResponse
 from ..core.config import settings
 
@@ -40,7 +40,10 @@ async def jira_auth_callback(code: str):
             )
             
             if token_response.status_code != 200:
-                return {"error": True, "code": token_response.status_code, "detail": "Failed to exchange token"}
+                raise HTTPException(
+                    status_code=token_response.status_code,
+                    detail={"error": True, "code": token_response.status_code, "detail": "Failed to exchange token"}
+                )
                 
             tokens = token_response.json()
             
@@ -50,4 +53,9 @@ async def jira_auth_callback(code: str):
             return {"status": "success", "message": "Jira OAuth linked successfully"}
             
     except Exception as e:
-        return {"error": True, "code": 500, "detail": str(e)}
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(
+            status_code=500,
+            detail={"error": True, "code": 500, "detail": str(e)}
+        )

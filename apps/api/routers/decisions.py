@@ -27,10 +27,13 @@ async def search_decisions(q: str = Query(...)):
     client = CogneeClient()
     
     try:
-        graph_results = await client.search(q, search_type="GRAPH_COMPLETION")
+        graph_results = await client.search(q, search_type="hybrid")
     except Exception as e:
         logger.error(f"Graph search failed: {e}")
-        raise HTTPException(status_code=500, detail="Graph search failed")
+        raise HTTPException(
+            status_code=500, 
+            detail={"error": True, "code": 500, "detail": "Graph search failed"}
+        )
 
     if not graph_results:
         return DecisionSearchResponse(
@@ -85,4 +88,35 @@ async def search_decisions(q: str = Query(...)):
 
     except Exception as e:
         logger.error(f"Claude answer generation failed: {e}")
-        raise HTTPException(status_code=500, detail="Answer generation failed")
+        raise HTTPException(
+            status_code=500, 
+            detail={"error": True, "code": 500, "detail": "Answer generation failed"}
+        )
+
+class DeprecateResponse(BaseModel):
+    status: str
+    decision_id: str
+    forget_result: dict
+
+@router.post("/decisions/{decision_id}/deprecate", response_model=DeprecateResponse)
+async def deprecate_decision(decision_id: str):
+    """Deprecates an overridden decision, removing it from active memory so PR Blocker stops firing."""
+    logger.info(f"Deprecating decision {decision_id}. Triggering forget.")
+    client = CogneeClient()
+    
+    try:
+        forget_res = await client.forget(decision_id)
+        # Re-cognify after forgetting
+        cognify_res = await client.cognify("architecture_decisions")
+        
+        return DeprecateResponse(
+            status="success",
+            decision_id=decision_id,
+            forget_result={"forget": forget_res, "cognify": cognify_res}
+        )
+    except Exception as e:
+        logger.error(f"Failed to forget/cognify after deprecating decision {decision_id}: {e}")
+        raise HTTPException(
+            status_code=500, 
+            detail={"error": True, "code": 500, "detail": str(e)}
+        )

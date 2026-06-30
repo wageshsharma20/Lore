@@ -98,8 +98,8 @@ async def post_pr_blocker_comment(repo: str, pr_number: int, conflicts: List[Con
     Must include the original decision reason and the author of that decision.
     """
     lines = [
-        "## 🧠 Lore — Decision History Check\n",
-        "I found past decisions that may be relevant to this PR. Please review before merging.\n\n"
+        "## ❌ PR Blocked by Lore\n",
+        "I found past decisions that conflict with this PR. Please review before merging.\n\n"
     ]
 
     for c in conflicts:
@@ -109,18 +109,15 @@ async def post_pr_blocker_comment(repo: str, pr_number: int, conflicts: List[Con
         author = d.get('made_by', {}).get('name', 'Unknown Author') if isinstance(d.get('made_by'), dict) else d.get('decision_author', 'Unknown Author')
         reason = d.get('reason_summary', d.get('reason', 'No reason provided.'))
         title = d.get('title', 'Unknown Decision')
-        date = d.get('decision_date', d.get('date', 'unknown date'))
         
-        lines.append(f"### ⚠️ {title}")
-        lines.append(f"**Blocked:** @{author} decided to do this on {date} because: {reason}")
-        lines.append(f"\n**Conflict detected:** You are introducing `{c.conflicting_technology}`, which conflicts with this decision.")
-        lines.append(f"\n❓ **Has the situation that caused this decision changed?**\n")
+        lines.append(f"### {title}")
+        lines.append(f"You are introducing `{c.conflicting_technology}`, which violates a prior architectural constraint:")
+        lines.append(f"\n> **@{author} decided:** {reason}\n")
         lines.append(f"[View full decision ->]({app_url}/decisions/{d.get('id', '')})\n")
         lines.append("---\n")
 
     lines.append(
-        "_To dismiss this warning, a team lead can approve the PR or "
-        f"[mark the conflict as resolved]({app_url}/pr-check/{pr_number})._"
+        f"[To override, request sign-off from your tech lead]({app_url}/pr-check/{pr_number})"
     )
     
     # Real implementation would call:

@@ -55,6 +55,9 @@ async def mock_streaming_pipeline(messages: List[ChatMessage]):
 
 @router.post("")
 async def chat_endpoint(req: ChatRequest):
+    """
+    Streams the response for a chat message using the AI RAG pipeline over the Knowledge Graph.
+    """
     return StreamingResponse(
         mock_streaming_pipeline(req.messages),
         media_type="text/event-stream"

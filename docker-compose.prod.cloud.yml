@@ -1,14 +1,16 @@
 # docker-compose.prod.cloud.yml
-# Production deployment config for Cognee Cloud
+# Production deployment config for Cognee Cloud & Neo4j AuraDB
+
 services:
   api:
     image: ghcr.io/yourorg/lore-api:latest
     restart: always
     environment:
       - COGNEE_MODE=cloud
+      - ENV=production
     env_file: .env.prod
     ports: ["8000:8000"]
-    command: uvicorn main:app --host 0.0.0.0 --workers 4
+    command: uvicorn apps.api.main:app --host 0.0.0.0 --workers 4
     depends_on: [postgres, redis]
 
   worker:
@@ -16,8 +18,19 @@ services:
     restart: always
     environment:
       - COGNEE_MODE=cloud
+      - ENV=production
     env_file: .env.prod
-    command: celery -A tasks worker --concurrency 4
+    command: celery -A apps.api.tasks worker --concurrency 4 --loglevel=info
+    depends_on: [postgres, redis]
+
+  beat:
+    image: ghcr.io/yourorg/lore-api:latest
+    restart: always
+    environment:
+      - COGNEE_MODE=cloud
+      - ENV=production
+    env_file: .env.prod
+    command: celery -A apps.api.tasks beat --loglevel=info
     depends_on: [postgres, redis]
 
   web:
