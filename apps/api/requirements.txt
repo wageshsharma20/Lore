@@ -11,3 +11,7 @@ pytest-asyncio==0.23.5
 sentry-sdk
 PyJWT
 cryptography
+cognee==1.2.1
+instructor==1.15.1
+httpx==0.28.1
+google-genai==2.9.0

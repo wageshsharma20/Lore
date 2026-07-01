@@ -75,8 +75,12 @@ class CogneeClient:
         """Search the graph/vector database."""
         if self.mode == "local":
             if self._local_cognee:
-                # Assuming cognee.search(query, search_type)
-                result = await self._local_cognee.search(query, search_type=search_type)
+                try:
+                    from cognee.modules.search.types import SearchType
+                    qt = SearchType.HYBRID if search_type.lower() == "hybrid" else SearchType.CHUNKS
+                except ImportError:
+                    qt = search_type
+                result = await self._local_cognee.search(query_text=query, query_type=qt)
                 return result
             return []
         
