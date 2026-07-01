@@ -10,7 +10,7 @@ export interface ModuleRiskData {
     dependencyDepth: number; // 0-100
     age: number; // 0-100
   };
-  loneContributor: string | null; // e.g., "@alice" or null
+  loneContributor?: string | null; // e.g., "@alice" or null
   overallRisk: number; // 0-100 calculated
 }
 

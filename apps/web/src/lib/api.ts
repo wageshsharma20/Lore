@@ -4,7 +4,7 @@ import { components } from "./api-types";
 // Extract types from the generated OpenAPI schema
 export type Decision = components["schemas"]["Decision"];
 export type HeatmapSummary = components["schemas"]["HeatmapSummary"];
-export type ADR = components["schemas"]["ADR"];
+export type ADR = components["schemas"]["ADRResponse"];
 export type ModuleRiskData = components["schemas"]["ModuleRiskData"];
 export type PRCheckResult = components["schemas"]["PRCheckResult"];
 

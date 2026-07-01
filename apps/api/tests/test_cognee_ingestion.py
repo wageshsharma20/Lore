@@ -28,7 +28,7 @@ async def test_cognee_ingestion_made_by_edge(mock_detect, mock_extract, mock_cog
     
     pr_payload = {
         "title": "A PR", "body": "...", "number": 123, 
-        "user": {"login": "alice"}, "repo": {"full_name": "org/repo"}
+        "user": {"login": "alice"}, "base": {"repo": {"full_name": "org/repo"}}
     }
     
     await _async_process_merged_pr(pr_payload)

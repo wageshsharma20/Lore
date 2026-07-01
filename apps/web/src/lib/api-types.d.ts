@@ -4,55 +4,7 @@
  */
 
 export interface paths {
-    "/api/decisions": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getDecisions"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/summary": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getSummary"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/adrs": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getAdrs"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/memify": {
+    "/webhooks/github": {
         parameters: {
             query?: never;
             header?: never;
@@ -61,14 +13,38 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["memifyDecision"];
+        /**
+         * Github Webhook
+         * @description Processes incoming GitHub webhooks for PR tracking and AI extraction.
+         */
+        post: operations["github_webhook_webhooks_github_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/sync": {
+    "/auth/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Auth Status
+         * @description Returns whether each provider is currently connected (has a stored token).
+         */
+        get: operations["get_auth_status_auth_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/{provider}/disconnect": {
         parameters: {
             query?: never;
             header?: never;
@@ -77,21 +53,111 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["triggerGitHubSync"];
+        /**
+         * Disconnect Provider
+         * @description Disconnects the specified provider by removing its stored token.
+         */
+        post: operations["disconnect_provider_auth__provider__disconnect_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/members/{id}/active": {
+    "/auth/github": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["isActiveTeamMember"];
+        /** Github Auth Start */
+        get: operations["github_auth_start_auth_github_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/github/callback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Github Auth Callback */
+        get: operations["github_auth_callback_auth_github_callback_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/slack": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Slack Auth Start */
+        get: operations["slack_auth_start_auth_slack_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/slack/callback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Slack Auth Callback */
+        get: operations["slack_auth_callback_auth_slack_callback_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/jira": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Jira Auth Start */
+        get: operations["jira_auth_start_auth_jira_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/jira/callback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Jira Auth Callback */
+        get: operations["jira_auth_callback_auth_jira_callback_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -109,7 +175,293 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["chat"];
+        /**
+         * Chat Endpoint
+         * @description Streams the response for a chat message using the real Cognee + Gemini RAG pipeline.
+         */
+        post: operations["chat_endpoint_api_chat_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/adrs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Adrs
+         * @description Returns a list of approved ADRs.
+         *     Currently just returns an empty list as approved ADRs are tracked directly in the GitHub repo.
+         */
+        get: operations["list_adrs_api_adrs_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/adrs/{adr_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Adr
+         * @description Gets a specific approved ADR.
+         */
+        get: operations["get_adr_api_adrs__adr_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/adrs/{decision_id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Approve Adr
+         * @description Ratifies a decision (ADR) and calls Cognee's memify to enrich the memory node.
+         */
+        post: operations["approve_adr_api_adrs__decision_id__approve_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ask": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ask Lore
+         * @description Queries the Knowledge Graph using the hybrid graph-vector pipeline and streams SSE.
+         */
+        post: operations["ask_lore_ask_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/decisions/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Search Decisions
+         * @description Decision Memory Backend: Graph search + Gemini answer endpoint.
+         *     Returns a specific JSON schema with attribution.
+         */
+        get: operations["search_decisions_decisions_search_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/decisions/{decision_id}/deprecate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Deprecate Decision
+         * @description Deprecates an overridden decision, removing it from active memory so PR Blocker stops firing.
+         */
+        post: operations["deprecate_decision_decisions__decision_id__deprecate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/members/{member_id}/active": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Is Active Member
+         * @description Check if a team member is currently active.
+         */
+        get: operations["is_active_member_api_members__member_id__active_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Summary
+         * @description Returns the Heatmap Summary data dynamically calculated from Cognee graph.
+         */
+        get: operations["get_summary_api_summary_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/decisions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Decisions
+         * @description Returns all decisions from the knowledge graph, with optional text search.
+         */
+        get: operations["get_decisions_api_decisions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/dashboard/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Refresh Dashboard Cache
+         * @description Clear the dashboard cache to force a fresh fetch from Cognee.
+         */
+        post: operations["refresh_dashboard_cache_api_dashboard_refresh_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/heatmap/modules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Heatmap Modules
+         * @description Derives per-module risk scores from real Cognee graph data.
+         *     Groups decisions by inferred module/component, then calculates
+         *     risk factors and detects lone-contributor knowledge silos.
+         */
+        get: operations["get_heatmap_modules_api_heatmap_modules_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/pr-check/{pr_number}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Pr Check
+         * @description Searches the Cognee knowledge graph for decisions that may conflict
+         *     with the given PR. Uses Gemini to assess conflict severity.
+         */
+        get: operations["get_pr_check_api_pr_check__pr_number__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sync": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Trigger Github Sync */
+        post: operations["trigger_github_sync_api_sync_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Health Check
+         * @description Health check endpoint to ensure API is running.
+         */
+        get: operations["health_check_health_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -120,38 +472,178 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        Decision: {
+        /** ADRResponse */
+        ADRResponse: {
+            /** Id */
             id: string;
+            /** Title */
             title: string;
-            decision_type: string;
-            what: string;
-            reason: string;
+            /** Status */
+            status: string;
+            /** Author */
             author: string;
-            contributors: string[];
+            /** Date */
             date: string;
+            /** Content */
+            content: string;
+            /** Decisionid */
+            decisionId: string;
+        };
+        /** ApprovalResponse */
+        ApprovalResponse: {
+            /** Status */
+            status: string;
+            /** Decision Id */
+            decision_id: string;
+            /** Memify Result */
+            memify_result: {
+                [key: string]: unknown;
+            };
+        };
+        /** AskRequest */
+        AskRequest: {
+            /** Query */
+            query: string;
+        };
+        /** ChatMessage */
+        ChatMessage: {
+            /** Role */
+            role: string;
+            /** Content */
+            content: string;
+        };
+        /** ChatRequest */
+        ChatRequest: {
+            /** Messages */
+            messages: components["schemas"]["ChatMessage"][];
+        };
+        /** Decision */
+        Decision: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+            /** Decision Type */
+            decision_type: string;
+            /** What */
+            what: string;
+            /**
+             * Reason
+             * @default
+             */
+            reason: string;
+            /** Author */
+            author: string;
+            /** Contributors */
+            contributors: string[];
+            /** Date */
+            date: string;
+            /** Affected Systems */
             affected_systems: string[];
+            /** Source Pr Url */
             source_pr_url: string;
         };
-        ADR: {
-            id: string;
-            title: string;
-            status: string;
-            author: string;
-            date: string;
-            content: string;
+        /** DecisionSearchResponse */
+        DecisionSearchResponse: {
+            /** Answer */
+            answer: string;
+            /** Decision Author */
+            decision_author: string;
+            /** Decision Date */
+            decision_date: string;
+            /** Source Pr Url */
+            source_pr_url: string;
+            /** Confidence */
+            confidence: number;
         };
+        /** DeprecateResponse */
+        DeprecateResponse: {
+            /** Status */
+            status: string;
+            /** Decision Id */
+            decision_id: string;
+            /** Forget Result */
+            forget_result: {
+                [key: string]: unknown;
+            };
+        };
+        /** HTTPValidationError */
+        HTTPValidationError: {
+            /** Detail */
+            detail?: components["schemas"]["ValidationError"][];
+        };
+        /** HeatmapSummary */
         HeatmapSummary: {
+            /** Total Decisions */
             total_decisions: number;
+            /** Red Silos */
             red_silos: number;
+            /** Yellow Warnings */
             yellow_warnings: number;
+            /** Green Healthy */
             green_healthy: number;
         };
-        ChatMessage: {
-            role: string;
-            content: string;
+        /** ModuleRiskData */
+        ModuleRiskData: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Size */
+            size: number;
+            factors: components["schemas"]["ModuleRiskFactors"];
+            /** Lonecontributor */
+            loneContributor?: string | null;
+            /** Overallrisk */
+            overallRisk: number;
         };
-        ChatRequest: {
-            messages: components["schemas"]["ChatMessage"][];
+        /** ModuleRiskFactors */
+        ModuleRiskFactors: {
+            /** Codechurn */
+            codeChurn: number;
+            /** Complexity */
+            complexity: number;
+            /** Testcoverage */
+            testCoverage: number;
+            /** Issuevolume */
+            issueVolume: number;
+            /** Dependencydepth */
+            dependencyDepth: number;
+            /** Age */
+            age: number;
+        };
+        /** PRCheckResult */
+        PRCheckResult: {
+            /** Pr Number */
+            pr_number: string;
+            /** Status */
+            status: string;
+            /** Conflicts */
+            conflicts: components["schemas"]["PRConflict"][];
+            /** Checked At */
+            checked_at: string;
+        };
+        /** PRConflict */
+        PRConflict: {
+            /** Decision Title */
+            decision_title: string;
+            /** Decision Author */
+            decision_author: string;
+            /** Decision Date */
+            decision_date: string;
+            /** Reason */
+            reason: string;
+            /** Severity */
+            severity: string;
+        };
+        /** ValidationError */
+        ValidationError: {
+            /** Location */
+            loc: (string | number)[];
+            /** Message */
+            msg: string;
+            /** Error Type */
+            type: string;
         };
     };
     responses: never;
@@ -162,7 +654,7 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    getDecisions: {
+    github_webhook_webhooks_github_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -177,12 +669,457 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Decision"][];
+                    "application/json": unknown;
                 };
             };
         };
     };
-    getSummary: {
+    get_auth_status_auth_status_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
+    disconnect_provider_auth__provider__disconnect_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                provider: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    github_auth_start_auth_github_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
+    github_auth_callback_auth_github_callback_get: {
+        parameters: {
+            query: {
+                code: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    slack_auth_start_auth_slack_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
+    slack_auth_callback_auth_slack_callback_get: {
+        parameters: {
+            query: {
+                code: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    jira_auth_start_auth_jira_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
+    jira_auth_callback_auth_jira_callback_get: {
+        parameters: {
+            query: {
+                code: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    chat_endpoint_api_chat_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChatRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_adrs_api_adrs_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ADRResponse"][];
+                };
+            };
+        };
+    };
+    get_adr_api_adrs__adr_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                adr_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ADRResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    approve_adr_api_adrs__decision_id__approve_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                decision_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApprovalResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    ask_lore_ask_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AskRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    search_decisions_decisions_search_get: {
+        parameters: {
+            query: {
+                q: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DecisionSearchResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    deprecate_decision_decisions__decision_id__deprecate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                decision_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeprecateResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    is_active_member_api_members__member_id__active_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                member_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": boolean;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_summary_api_summary_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -202,7 +1139,38 @@ export interface operations {
             };
         };
     };
-    getAdrs: {
+    get_decisions_api_decisions_get: {
+        parameters: {
+            query?: {
+                query?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Decision"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    refresh_dashboard_cache_api_dashboard_refresh_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -217,40 +1185,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ADR"][];
+                    "application/json": unknown;
                 };
             };
         };
     };
-    memifyDecision: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": {
-                    decision_id: string;
-                    ratified: boolean;
-                    adr_url?: string;
-                };
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": Record<string, never>;
-                };
-            };
-        };
-    };
-    triggerGitHubSync: {
+    get_heatmap_modules_api_heatmap_modules_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -265,17 +1205,20 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["ModuleRiskData"][];
                 };
             };
         };
     };
-    isActiveTeamMember: {
+    get_pr_check_api_pr_check__pr_number__get: {
         parameters: {
-            query?: never;
+            query?: {
+                title?: string | null;
+                body?: string | null;
+            };
             header?: never;
             path: {
-                id: string;
+                pr_number: string;
             };
             cookie?: never;
         };
@@ -287,23 +1230,28 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": boolean;
+                    "application/json": components["schemas"]["PRCheckResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
     };
-    chat: {
+    trigger_github_sync_api_sync_post: {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ChatRequest"];
-            };
-        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
@@ -311,7 +1259,27 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "text/event-stream": string;
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
+    health_check_health_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
         };
