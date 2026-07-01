@@ -575,9 +575,22 @@ export default function LandingPage() {
             </TextEffect>
           </div>
 
-          <div className="text-xl md:text-2xl text-white/30 font-light mb-14 max-w-3xl mx-auto leading-relaxed">
-            <TextEffect trigger={isSplashComplete} preset="fade-in-blur" speedReveal={1.1} speedSegment={0.3} delay={0.6}>
-              Lore watches every PR, reads every Jira ticket, and listens to every Slack thread — then remembers everything, forever.
+          <div className="text-xl md:text-2xl text-white/30 font-light mb-14 max-w-3xl mx-auto leading-relaxed text-center">
+            <TextEffect trigger={isSplashComplete} preset="fade-in-blur" speedReveal={1.1} speedSegment={0.3} delay={0.6} className="inline">
+              Lore watches every PR, reads every Jira ticket, and listens to every Slack thread — then remembers its
+            </TextEffect>
+            <span className="inline-block mx-1.5">
+              <motion.span 
+                initial={{ filter: "blur(10px)", opacity: 0, y: 5 }} 
+                animate={isSplashComplete ? { filter: "blur(0px)", opacity: 1, y: 0 } : {}} 
+                transition={{ duration: 0.8, delay: 0.8 }}
+                className="inline-block font-bold text-[#0052ff]"
+              >
+                INTENT
+              </motion.span>
+            </span>
+            <TextEffect trigger={isSplashComplete} preset="fade-in-blur" speedReveal={1.1} speedSegment={0.3} delay={0.9} className="inline">
+              forever.
             </TextEffect>
           </div>
 
@@ -717,10 +730,10 @@ export default function LandingPage() {
                   {s.step}
                 </p>
                 <div className="w-px h-12 bg-gradient-to-b from-[#0052ff]/30 to-transparent mb-8" />
-                <h3 className="text-xl font-medium text-black/90 mb-4 tracking-tight">
+                <h3 className="text-4xl font-medium text-black/90 mb-4 tracking-tight">
                   {s.title}
                 </h3>
-                <p className="text-base text-black/60 font-light leading-relaxed">
+                <p className="text-2xl text-black/60 font-light leading-relaxed">
                   {s.desc}
                 </p>
               </motion.div>

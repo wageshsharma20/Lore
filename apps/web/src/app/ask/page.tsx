@@ -72,7 +72,7 @@ export default function AskPage() {
     try {
       const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
       
-      const res = await fetch(`${API_BASE_URL}/ask`, {
+      const res = await fetch(`${API_BASE_URL}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messages: newMessages }),
@@ -119,9 +119,13 @@ export default function AskPage() {
               } else if (isChunk) {
                 setMessages((prev) => {
                   const updated = [...prev];
-                  const lastMsg = updated[updated.length - 1];
+                  const lastMsgIndex = updated.length - 1;
+                  const lastMsg = updated[lastMsgIndex];
                   if (lastMsg.role === 'assistant') {
-                    lastMsg.content += (eventData.text || eventData.chunk);
+                    updated[lastMsgIndex] = { 
+                      ...lastMsg, 
+                      content: lastMsg.content + (eventData.text || eventData.chunk) 
+                    };
                   }
                   return updated;
                 });

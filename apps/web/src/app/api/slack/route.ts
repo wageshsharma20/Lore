@@ -19,11 +19,12 @@ export async function POST(req: Request) {
     // Design the @Lore query handler to support natural-language questions
     if (text.toLowerCase().includes("why did we") || text.toLowerCase().includes("who decided")) {
       
-      // Route these to the Decision Memory endpoint (stubbed for now using getDecisions!)
       const decisions = await getDecisions();
-      const AI_found_answer = false; // Pretend the AI couldn't find the answer in the graph
       
-      if (!AI_found_answer) {
+      // Real check against graph results rather than hardcoded false
+      const aiFoundAnswer = decisions && decisions.length > 0;
+      
+      if (!aiFoundAnswer) {
          // Ask the team for context!
          await ask_team_for_context(channel, thread_ts || ts, "Why did we make this specific decision? I couldn't find it in my memory graph.");
       }

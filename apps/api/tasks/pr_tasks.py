@@ -2,36 +2,22 @@ import asyncio
 import logging
 from typing import Dict, Any
 from ..core.celery_app import celery_app
-from ..services.github import PRData
+from ..services.github import PRData, collect_pr_data
 from ..services.gemini_service import detect_architectural_intent, extract_decisions
 from ..services.cognee_client import CogneeClient
+from ..routers.auth import get_stored_token
 
 logger = logging.getLogger(__name__)
 
 async def _async_process_merged_pr(pr_payload: Dict[str, Any]):
     logger.info(f"Starting async processing for PR #{pr_payload.get('number')}")
     
-    # Map webhook payload to our internal PRData schema
-    # (Handling a simplified payload for the hackathon)
-    pr_data = PRData(
-        title=pr_payload.get("title", "Unknown Title"),
-        body=pr_payload.get("body", "") or "No description",
-        author=pr_payload.get("user", {}).get("login", "unknown"),
-        diff="Mock diff for processing...",  # In reality, fetch from PR diff_url
-        diff_summary="",
-        pr_number=pr_payload.get("number", 0),
-        commits=[],
-        changed_files=[],
-        reviewers=[],
-        labels=[],
-        linked_issues=[],
-        jira_keys=[],
-        slack_thread_urls=[],
-        merged_at=pr_payload.get("merged_at", ""),
-        repo_full_name=pr_payload.get("repo", {}).get("full_name", "")
-    )
+    github_token = get_stored_token("github")
+    
+    # 1. Fetch real PR data from GitHub API instead of mock
+    pr_data = await collect_pr_data(pr_payload, github_token)
 
-    # 1. Intent Detection
+    # 2. Intent Detection
     is_architectural = await detect_architectural_intent(pr_data)
     if not is_architectural:
         logger.info(f"PR #{pr_payload.get('number')} skipped. No architectural intent detected.")
@@ -39,7 +25,7 @@ async def _async_process_merged_pr(pr_payload: Dict[str, Any]):
 
     logger.info(f"PR #{pr_payload.get('number')} has architectural intent. Extracting decisions...")
 
-    # 2. Extract Decisions
+    # 3. Extract Decisions
     # Note: jira_tickets and slack_threads would be fetched here in a real scenario
     decisions = await extract_decisions(pr_data, jira_tickets=[], slack_threads=[])
     
@@ -47,13 +33,11 @@ async def _async_process_merged_pr(pr_payload: Dict[str, Any]):
         logger.info("No explicit decisions found by the extractor.")
         return {"status": "success", "decisions_extracted": 0}
 
-    # 3. Write to DB via CogneeClient
+    # 4. Write to DB via CogneeClient
     client = CogneeClient()
     saved_count = 0
     
     for decision in decisions:
-        # Guaranteeing the specific schema requirement for DB output
-        # Using structured dicts that map to nodes to implicitly create MADE_BY edge
         db_payload = {
             "title": decision.title,
             "decision": decision.decision,

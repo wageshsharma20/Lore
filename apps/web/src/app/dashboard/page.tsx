@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { SyncButton } from "@/components/SyncButton"; 
 import { HeartbeatLoader } from "@/components/ui/heartbeat-loader";
+import { useState, useEffect } from "react";
 
 function MemoryModeToggle() {
   return (
@@ -23,6 +24,15 @@ function MemoryModeToggle() {
 }
 
 function OnboardingChecklist() {
+  const [status, setStatus] = useState({ github: false, slack: false, jira: false });
+  useEffect(() => {
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    fetch(`${API_BASE_URL}/auth/status`)
+      .then(res => res.json())
+      .then(data => setStatus({ github: !!data.github, slack: !!data.slack, jira: !!data.jira }))
+      .catch(err => console.error(err));
+  }, []);
+
   return (
     <div className="mb-12 bg-white/5 backdrop-blur-xl border border-white/10 p-8 shadow-2xl relative overflow-hidden">
       <div className="absolute -top-24 -right-24 w-48 h-48 bg-primary/20 blur-3xl"></div>
@@ -33,12 +43,12 @@ function OnboardingChecklist() {
           <p className="text-lg text-gray-200 group-hover:text-white transition-colors"><span className="font-semibold">Step 1:</span> Start the Lore backend <span className="text-sm text-emerald-400 ml-2">(Done!)</span></p>
         </div>
         <div className="flex items-center gap-4 group">
-          <div className="w-4 h-4 bg-white/20"></div>
-          <p className="text-lg text-gray-400 group-hover:text-gray-200 transition-colors"><span className="font-semibold">Step 2:</span> Connect GitHub App</p>
+          <div className={`w-4 h-4 ${status.github ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'bg-white/20'}`}></div>
+          <p className={`text-lg transition-colors ${status.github ? 'text-gray-200 group-hover:text-white' : 'text-gray-400 group-hover:text-gray-200'}`}><span className="font-semibold">Step 2:</span> Connect GitHub App {status.github && <span className="text-sm text-emerald-400 ml-2">(Done!)</span>}</p>
         </div>
         <div className="flex items-center gap-4 group">
-          <div className="w-4 h-4 bg-white/20"></div>
-          <p className="text-lg text-gray-400 group-hover:text-gray-200 transition-colors"><span className="font-semibold">Step 3:</span> Connect Slack Bot</p>
+          <div className={`w-4 h-4 ${status.slack ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'bg-white/20'}`}></div>
+          <p className={`text-lg transition-colors ${status.slack ? 'text-gray-200 group-hover:text-white' : 'text-gray-400 group-hover:text-gray-200'}`}><span className="font-semibold">Step 3:</span> Connect Slack Bot {status.slack && <span className="text-sm text-emerald-400 ml-2">(Done!)</span>}</p>
         </div>
         <div className="flex items-center gap-4 group">
           <div className="w-4 h-4 bg-white/20"></div>

@@ -1,17 +1,14 @@
 from typing import List
+import os
 
 def get_active_team_members() -> List[str]:
     """
-    Mock backend function representing a live DB query to the `teams` table.
     Returns the list of currently active employee usernames.
-    `ghost_user` is intentionally excluded to simulate a departed author.
+    Reads from the TEAM_MEMBERS environment variable (comma-separated).
+    Example: TEAM_MEMBERS="alice,bob,charlie,dave,eve"
+    Falls back to an empty list if not configured.
     """
-    # In reality, this would query Postgres: SELECT username FROM users WHERE is_active=True
-    return [
-        "alice",
-        "bob",
-        "charlie",
-        "dave",
-        "eve"
-        # "ghost_user" is omitted
-    ]
+    raw = os.getenv("TEAM_MEMBERS", "")
+    if not raw.strip():
+        return []
+    return [name.strip() for name in raw.split(",") if name.strip()]

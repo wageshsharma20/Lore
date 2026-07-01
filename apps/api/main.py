@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-from .routers import webhooks, auth, chat, adrs, ask, decisions, dashboard
+from .routers import webhooks, auth, chat, adrs, ask, decisions, dashboard, sync
 import logging
 
 import logging
@@ -23,6 +23,16 @@ app = FastAPI(
     description="The AI Memory Layer for Engineering Teams",
     version="1.0.0",
     docs_url="/docs"
+)
+
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 from fastapi.exceptions import RequestValidationError
@@ -52,6 +62,7 @@ app.include_router(adrs.router)
 app.include_router(ask.router)
 app.include_router(decisions.router)
 app.include_router(dashboard.router)
+app.include_router(sync.router)
 
 @app.get("/health")
 async def health_check():

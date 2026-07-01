@@ -1,17 +1,40 @@
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
-from typing import Dict, Any
+from typing import Dict, Any, List
 from ..services.cognee_client import CogneeClient
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter()
+router = APIRouter(prefix="/api", tags=["ADRs"])
 
 class ApprovalResponse(BaseModel):
     status: str
     decision_id: str
     memify_result: Dict[str, Any]
+
+class ADRResponse(BaseModel):
+    id: str
+    title: str
+    status: str
+    author: str
+    date: str
+    content: str
+    decisionId: str
+
+@router.get("/adrs", response_model=List[ADRResponse])
+async def list_adrs():
+    """
+    Returns a list of approved ADRs. 
+    Currently just returns an empty list as approved ADRs are tracked directly in the GitHub repo.
+    """
+    return []
+
+@router.get("/adrs/{adr_id}", response_model=ADRResponse)
+async def get_adr(adr_id: str):
+    """Gets a specific approved ADR."""
+    raise HTTPException(status_code=404, detail="ADR not found")
 
 @router.post("/adrs/{decision_id}/approve", response_model=ApprovalResponse)
 async def approve_adr(decision_id: str):

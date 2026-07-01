@@ -86,9 +86,9 @@ export async function approveAndCommitAdr(draftId: string) {
   const { token } = await appAuth({ type: 'installation' });
   const octokit = new Octokit({ auth: token });
   
-  // Note: For a hackathon, we assume the repo is 'tarot-club-hackathons/lore'
-  const owner = 'tarot-club-hackathons';
-  const repo = 'lore';
+  // Use env vars for repo owner/name, with fallback
+  const owner = process.env.GITHUB_REPO_OWNER || 'tarot-club-hackathons';
+  const repo = process.env.GITHUB_REPO_NAME || 'lore';
   const branchName = `adr/add-${draftId}`;
   
   try {

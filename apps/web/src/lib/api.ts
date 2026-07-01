@@ -1,12 +1,12 @@
 // src/lib/api.ts
 import { components } from "./api-types";
-import { PRCheckResult, MOCK_PR_CHECKS } from "./mock-data";
-import { MOCK_DECISIONS, MOCK_SUMMARY, MOCK_ADRS } from "./mock-data";
 
 // Extract types from the generated OpenAPI schema
 export type Decision = components["schemas"]["Decision"];
 export type HeatmapSummary = components["schemas"]["HeatmapSummary"];
 export type ADR = components["schemas"]["ADR"];
+export type ModuleRiskData = components["schemas"]["ModuleRiskData"];
+export type PRCheckResult = components["schemas"]["PRCheckResult"];
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -46,9 +46,16 @@ export async function getAdr(id: string): Promise<ADR | undefined> {
   return res.json();
 }
 
+export async function getHeatmapModules(): Promise<ModuleRiskData[]> {
+  const res = await fetch(`${API_BASE_URL}/api/heatmap/modules`);
+  if (!res.ok) throw new Error("Failed to fetch heatmap modules");
+  return res.json();
+}
+
 export async function getPrCheck(prNumber: string): Promise<PRCheckResult | undefined> {
-  // Temporary mock data for UI demo
-  return MOCK_PR_CHECKS.find(c => c.pr_number === prNumber);
+  const res = await fetch(`${API_BASE_URL}/api/pr-check/${prNumber}`);
+  if (!res.ok) throw new Error("Failed to fetch PR check");
+  return res.json();
 }
 
 export async function triggerGitHubSync() {
@@ -58,7 +65,7 @@ export async function triggerGitHubSync() {
 }
 
 export async function memifyDecision(decisionId: string, adrUrl: string) {
-  const res = await fetch(`${API_BASE_URL}/adrs/${decisionId}/approve`, {
+  const res = await fetch(`${API_BASE_URL}/api/adrs/${decisionId}/approve`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
