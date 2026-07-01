@@ -4,6 +4,8 @@ from typing import Dict, Any, List
 from ..services.cognee_client import CogneeClient
 import logging
 import os
+from google import genai
+from google.genai import types
 
 logger = logging.getLogger(__name__)
 
@@ -26,15 +28,53 @@ class ADRResponse(BaseModel):
 @router.get("/adrs", response_model=List[ADRResponse])
 async def list_adrs():
     """
-    Returns a list of approved ADRs. 
-    Currently just returns an empty list as approved ADRs are tracked directly in the GitHub repo.
+    Returns a list of approved ADRs dynamically parsed from the memory graph.
     """
-    return []
+    client = CogneeClient()
+    try:
+        results = await client.search("approved architectural decision records", search_type="hybrid")
+    except Exception as e:
+        logger.error(f"Failed to fetch ADRs: {e}")
+        return []
+    
+    if not results:
+        return []
+        
+    gemini_client = genai.Client(api_key=os.getenv("GEMINI_API_KEY", "dummy-key"))
+    
+    class ADRList(BaseModel):
+        adrs: List[ADRResponse]
+        
+    prompt = (
+        f"Parse the following decisions into a list of formal ADRs.\n\n{results}\n\n"
+        f"Map the author to 'author', the decision_date to 'date', the 'reason_summary' and 'decision' to 'content', "
+        f"and standardise the 'status' to 'approved' if they seem ratified."
+    )
+    
+    try:
+        response = await gemini_client.aio.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+                response_schema=ADRList,
+                temperature=0.1
+            )
+        )
+        parsed = ADRList.model_validate_json(response.text)
+        return parsed.adrs
+    except Exception as e:
+        logger.error(f"Gemini ADR parsing failed: {e}")
+        return []
 
 @router.get("/adrs/{adr_id}", response_model=ADRResponse)
 async def get_adr(adr_id: str):
-    """Gets a specific approved ADR."""
-    raise HTTPException(status_code=404, detail="ADR not found")
+    """Gets a specific approved ADR dynamically."""
+    adrs = await list_adrs()
+    for adr in adrs:
+        if adr.id == adr_id or adr.decisionId == adr_id:
+            return adr
+    raise HTTPException(status_code=404, detail="ADR not found in graph")
 
 @router.post("/adrs/{decision_id}/approve", response_model=ApprovalResponse)
 async def approve_adr(decision_id: str):

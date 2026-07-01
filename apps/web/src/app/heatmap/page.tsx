@@ -10,7 +10,7 @@ import { HeartbeatLoader } from "@/components/ui/heartbeat-loader";
 export default function HeatmapPage() {
   const { data = [], isLoading } = useQuery({
     queryKey: ['heatmapData'],
-    queryFn: async () => getHeatmapModules(),
+    queryFn: getHeatmapModules,
   });
 
   const totalModules = data.length;

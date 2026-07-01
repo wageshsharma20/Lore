@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
-import { ModuleRiskData } from '@/lib/riskEngine';
+import { ModuleRiskData } from '@/lib/api';
 
 interface HeatmapTreemapProps {
   data: ModuleRiskData[];
