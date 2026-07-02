@@ -22,8 +22,8 @@ class CogneeClient:
                 import cognee # type: ignore
                 self._local_cognee = cognee
                 logger.info("CogneeClient initialized in LOCAL (Open-Source) mode.")
-            except ImportError:
-                logger.warning("cognee package not found locally. Please install it.")
+            except Exception as e:
+                logger.warning(f"Failed to initialize local cognee: {e}. Falling back to stub.")
                 self._local_cognee = None
         else:
             logger.info("CogneeClient initialized in CLOUD (API) mode.")
