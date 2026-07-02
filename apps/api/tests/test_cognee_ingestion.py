@@ -53,7 +53,9 @@ async def test_memify_called_on_adr_approval(mock_cognee_class):
     mock_client.memify.return_value = {"status": "success"}
     mock_client.cognify.return_value = {"status": "success"}
     
-    response = await approve_adr(decision_id="dec_123")
+    from apps.api.routers.adrs import ApproveADRRequest
+    payload = ApproveADRRequest(decision_id="dec_123", ratified=True, adr_url="")
+    response = await approve_adr(decision_id="dec_123", payload=payload)
     
     assert mock_client.memify.called
     assert mock_client.memify.call_args[0][0] == "dec_123"

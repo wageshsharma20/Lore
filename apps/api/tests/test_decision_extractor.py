@@ -1,4 +1,5 @@
 import pytest
+import os
 from apps.api.services.gemini_service import extract_decisions
 from apps.api.services.github import PRData
 
@@ -8,6 +9,7 @@ import json
 @pytest.mark.asyncio
 @patch("apps.api.services.gemini_service.genai.Client")
 async def test_decision_extractor_outputs(mock_genai_client_class):
+    os.environ["GEMINI_API_KEY"] = "test-key"
     mock_client = AsyncMock()
     mock_genai_client_class.return_value = mock_client
     
