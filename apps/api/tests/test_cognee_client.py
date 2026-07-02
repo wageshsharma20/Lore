@@ -7,6 +7,7 @@ from apps.api.services.cognee_client import CogneeClient
 def mock_env(monkeypatch):
     monkeypatch.setenv("COGNEE_MODE", "cloud")
     monkeypatch.setenv("COGNEE_API_KEY", "test_key")
+    monkeypatch.setenv("OPENAI_API_KEY", "dummy-key")
 
 @pytest.mark.asyncio
 async def test_cognee_client_cloud_mode(mock_env):
@@ -30,6 +31,7 @@ async def test_cognee_client_cloud_mode(mock_env):
 async def test_cognee_client_local_mode(monkeypatch):
     """Test that the client falls back to local mode correctly."""
     monkeypatch.setenv("COGNEE_MODE", "local")
+    monkeypatch.setenv("OPENAI_API_KEY", "dummy-key")
     client = CogneeClient()
     assert client.mode == "local"
     # Depending on whether `cognee` is installed, it either warns or sets _local_cognee.
