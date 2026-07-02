@@ -1,15 +1,21 @@
 import hmac
 import hashlib
+import logging
 from fastapi import APIRouter, Request, BackgroundTasks, HTTPException
 from ..core.config import settings
 from ..tasks.pr_tasks import process_merged_pr_task
 from ..tasks.pr_blocker import run_pr_blocker_check
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter()
 
 def verify_github_signature(body: bytes, signature: str, secret: str) -> bool:
     """Verifies that the webhook request genuinely originated from GitHub."""
-    if not signature or not secret:
+    if not secret:
+        logger.warning("GITHUB_WEBHOOK_SECRET is empty. Skipping webhook signature verification.")
+        return True
+    if not signature:
         return False
         
     expected = "sha256=" + hmac.new(

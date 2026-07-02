@@ -13,7 +13,11 @@ celery_app = Celery(
 
 from celery.schedules import crontab
 
+is_local = "localhost" in redis_url or "127.0.0.1" in redis_url
+
 celery_app.conf.update(
+    task_always_eager=is_local,
+    task_eager_propagates=is_local,
     task_serializer="json",
     accept_content=["json"],
     result_serializer="json",

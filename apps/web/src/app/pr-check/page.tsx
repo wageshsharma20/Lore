@@ -87,31 +87,33 @@ export default function PRCheckPage({ searchParams }: { searchParams: Promise<{ 
           <CardContent className="p-8">
             <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Original Decision Context</h3>
             
-            <div className="bg-gray-50 border border-gray-200 p-6 relative">
-              <div className="absolute -top-3 left-6 bg-white px-2 text-sm text-gray-500 font-medium">Historical Record</div>
-              
-              <h4 className="text-lg font-bold mb-2">{check.conflicts[0].decision_title}</h4>
-              <p className="text-gray-800 text-lg leading-relaxed mb-6 font-medium">
-                "{check.conflicts[0].reason}"
-              </p>
-              
-              <div className="flex items-center gap-4 text-sm">
-                <div className="flex items-center gap-2">
-                  <span className="text-gray-500">Decided by:</span>
-                  <Badge variant="secondary" className="bg-gray-200 hover:bg-gray-200 text-gray-800 border-none shadow-sm">{check.conflicts[0].decision_author}</Badge>
+            {check.conflicts.map((conflict, idx) => (
+              <div key={idx} className="bg-gray-50 border border-gray-200 p-6 relative mb-6">
+                <div className="absolute -top-3 left-6 bg-white px-2 text-sm text-gray-500 font-medium">Historical Record</div>
+                
+                <h4 className="text-lg font-bold mb-2">{conflict.decision_title}</h4>
+                <p className="text-gray-800 text-lg leading-relaxed mb-6 font-medium">
+                  "{conflict.reason}"
+                </p>
+                
+                <div className="flex items-center gap-4 text-sm">
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-500">Decided by:</span>
+                    <Badge variant="secondary" className="bg-gray-200 hover:bg-gray-200 text-gray-800 border-none shadow-sm">{conflict.decision_author}</Badge>
+                  </div>
+                  <div className="w-1 h-1 bg-gray-300"></div>
+                  <span className="text-gray-500">Date: {conflict.decision_date}</span>
+                  <div className="w-1 h-1 bg-gray-300"></div>
+                  <Badge variant="outline" className="border-red-300 text-red-700 bg-white">Severity: {conflict.severity}</Badge>
                 </div>
-                <div className="w-1 h-1 bg-gray-300"></div>
-                <span className="text-gray-500">Date: {check.conflicts[0].decision_date}</span>
-                <div className="w-1 h-1 bg-gray-300"></div>
-                <Badge variant="outline" className="border-red-300 text-red-700 bg-white">Severity: {check.conflicts[0].severity}</Badge>
               </div>
-            </div>
+            ))}
 
             <div className="mt-8 p-4 bg-amber-50 border border-amber-200 flex items-start gap-3">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-600 mt-0.5"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
               <div>
                 <p className="text-amber-800 font-medium">Action Required</p>
-                <p className="text-amber-700/90 text-sm mt-1">To proceed with this PR, you must get sign-off from <b>{check.conflicts[0].decision_author}</b> or submit a superseding Architecture Decision Record (ADR).</p>
+                <p className="text-amber-700/90 text-sm mt-1">To proceed with this PR, you must get sign-off from the decision authors or submit a superseding Architecture Decision Record (ADR).</p>
               </div>
             </div>
           </CardContent>

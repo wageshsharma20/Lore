@@ -68,19 +68,21 @@ export function HeatmapTreemap({ data }: HeatmapTreemapProps) {
       .attr('ry', 4)
       .style('cursor', 'pointer')
       .on('mouseenter', (event, d) => {
+        const rect = containerRef.current?.getBoundingClientRect();
         setTooltip({
           visible: true,
           content: d.data,
-          x: event.pageX,
-          y: event.pageY,
+          x: event.clientX - (rect?.left || 0),
+          y: event.clientY - (rect?.top || 0),
         });
         d3.select(event.currentTarget).attr('stroke', '#ffffff').attr('stroke-width', 3);
       })
       .on('mousemove', (event) => {
+        const rect = containerRef.current?.getBoundingClientRect();
         setTooltip(prev => ({
           ...prev,
-          x: event.pageX,
-          y: event.pageY,
+          x: event.clientX - (rect?.left || 0),
+          y: event.clientY - (rect?.top || 0),
         }));
       })
       .on('mouseleave', (event, d) => {
@@ -135,8 +137,8 @@ export function HeatmapTreemap({ data }: HeatmapTreemapProps) {
         <div 
           className="absolute z-50 bg-black/80 backdrop-blur-xl border border-white/20 shadow-2xl p-5 text-sm pointer-events-none transform -translate-x-1/2 -translate-y-full text-white"
           style={{ 
-            left: tooltip.x - (containerRef.current?.getBoundingClientRect().left || 0), 
-            top: tooltip.y - (containerRef.current?.getBoundingClientRect().top || 0) - 20,
+            left: tooltip.x, 
+            top: tooltip.y - 20,
             minWidth: '280px'
           }}
         >

@@ -40,7 +40,10 @@ async def list_adrs():
     if not results:
         return []
         
-    gemini_client = genai.Client(api_key=os.getenv("GEMINI_API_KEY", "dummy-key"))
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key or api_key == "dummy-key":
+        raise HTTPException(status_code=500, detail="GEMINI_API_KEY is not configured.")
+    gemini_client = genai.Client(api_key=api_key)
     
     class ADRList(BaseModel):
         adrs: List[ADRResponse]
@@ -76,10 +79,22 @@ async def get_adr(adr_id: str):
             return adr
     raise HTTPException(status_code=404, detail="ADR not found in graph")
 
+class ApproveADRRequest(BaseModel):
+    decision_id: str
+    ratified: bool
+    adr_url: str
+
 @router.post("/adrs/{decision_id}/approve", response_model=ApprovalResponse)
-async def approve_adr(decision_id: str):
+async def approve_adr(decision_id: str, payload: ApproveADRRequest):
     """Ratifies a decision (ADR) and calls Cognee's memify to enrich the memory node."""
-    logger.info(f"ADR {decision_id} approved. Triggering memify.")
+    logger.info(f"ADR {decision_id} approval requested. Ratified: {payload.ratified}")
+    if not payload.ratified:
+        return ApprovalResponse(
+            status="rejected",
+            decision_id=decision_id,
+            memify_result={}
+        )
+    
     client = CogneeClient()
     
     try:

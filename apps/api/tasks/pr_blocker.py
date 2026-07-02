@@ -25,7 +25,10 @@ async def detect_pr_intent(pr_payload: dict) -> PRIntent:
     """
     title = pr_payload.get("title", "")
     body = pr_payload.get("body", "") or ""
-    gemini_client = genai.Client(api_key=os.getenv("GEMINI_API_KEY", "dummy-key"))
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key or api_key == "dummy-key":
+        raise ValueError("GEMINI_API_KEY is not configured.")
+    gemini_client = genai.Client(api_key=api_key)
 
     prompt = (
         f"Analyze this pull request and extract its intent.\n\n"
@@ -45,7 +48,11 @@ async def detect_pr_intent(pr_payload: dict) -> PRIntent:
                 temperature=0.1,
             )
         )
-        return PRIntent.model_validate_json(response.text)
+        try:
+            return PRIntent.model_validate_json(response.text)
+        except ValueError:
+            logger.error("Gemini response text unavailable (safety blocked?).")
+            raise ValueError("Safety blocked")
     except Exception as e:
         logger.error(f"Gemini PR intent detection failed: {e}. Falling back to basic extraction.")
         # Graceful fallback: extract technologies from title keywords

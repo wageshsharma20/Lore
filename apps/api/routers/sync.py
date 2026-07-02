@@ -14,23 +14,26 @@ async def fetch_historical_prs(repo: str, token: str):
         "Accept": "application/vnd.github.v3+json",
     }
     async with httpx.AsyncClient(timeout=15.0) as client:
-        # Fetch last 30 closed/merged PRs
-        resp = await client.get(
-            f"https://api.github.com/repos/{repo}/pulls?state=closed&per_page=30",
-            headers=headers,
-        )
-        if resp.status_code != 200:
-            logger.error(f"Failed to fetch PRs for {repo}: {resp.text}")
-            return
-        
-        prs = resp.json()
-        for pr in prs:
-            if pr.get("merged_at"):
-                # Pass directly to the celery task
-                try:
-                    process_merged_pr_task.delay(pr)
-                except Exception as e:
-                    logger.error(f"Failed to queue PR task: {e}")
+        # Fetch up to 3 pages (90 PRs) to respect limits while being historical
+        for page in range(1, 4):
+            resp = await client.get(
+                f"https://api.github.com/repos/{repo}/pulls?state=closed&per_page=30&page={page}",
+                headers=headers,
+            )
+            if resp.status_code != 200:
+                logger.error(f"Failed to fetch PRs for {repo} on page {page}: {resp.text}")
+                break
+            
+            prs = resp.json()
+            if not prs:
+                break
+            
+            for pr in prs:
+                if pr.get("merged_at"):
+                    try:
+                        process_merged_pr_task.delay(pr)
+                    except Exception as e:
+                        logger.error(f"Failed to queue PR task: {e}")
 
 @router.post("/sync")
 async def trigger_github_sync(background_tasks: BackgroundTasks):

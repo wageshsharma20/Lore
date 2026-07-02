@@ -29,7 +29,10 @@ async def detect_architectural_intent(pr: PRData, client: Optional[genai.Client]
     Fast and cheap intent detector to check if a PR likely contains architectural or significant technical decisions.
     """
     if not client:
-        client = genai.Client(api_key=os.getenv("GEMINI_API_KEY", "dummy-key"))
+        api_key = os.getenv("GEMINI_API_KEY")
+        if not api_key or api_key == "dummy-key":
+            raise ValueError("GEMINI_API_KEY is not configured.")
+        client = genai.Client(api_key=api_key)
 
     prompt = (
         f"Does the following pull request seem to introduce architectural changes, new patterns, core library updates, "
@@ -42,7 +45,11 @@ async def detect_architectural_intent(pr: PRData, client: Optional[genai.Client]
             contents=prompt,
             config=types.GenerateContentConfig(temperature=0.1)
         )
-        answer = response.text.strip().upper()
+        try:
+            answer = response.text.strip().upper()
+        except ValueError:
+            logger.error("Gemini response text unavailable (safety blocked?).")
+            return True # Fallback
         return "YES" in answer
     except Exception as e:
         logger.error(f"Intent detector failed: {e}")
@@ -56,7 +63,10 @@ async def summarize_diff(diff: str, client: Optional[genai.Client] = None) -> st
         return diff  # Optimization: Skip LLM call if diff is manageable
 
     if not client:
-        client = genai.Client(api_key=os.getenv("GEMINI_API_KEY", "dummy-key"))
+        api_key = os.getenv("GEMINI_API_KEY")
+        if not api_key or api_key == "dummy-key":
+            raise ValueError("GEMINI_API_KEY is not configured.")
+        client = genai.Client(api_key=api_key)
 
     prompt = f"Please summarize the following code diff concisely, focusing only on structural, architectural, or significant logic changes:\n\n{diff[:50000]}"
     try:
@@ -65,7 +75,11 @@ async def summarize_diff(diff: str, client: Optional[genai.Client] = None) -> st
             contents=prompt,
             config=types.GenerateContentConfig(temperature=0.1)
         )
-        return response.text
+        try:
+            return response.text
+        except ValueError:
+            logger.error("Gemini response text unavailable (safety blocked?).")
+            return diff[:10000]
     except Exception as e:
         logger.error(f"Failed to summarize diff: {e}")
         return diff[:10000] # Fallback truncation
@@ -80,7 +94,10 @@ async def extract_decisions(
     Passes the PR diff, description, Jira context, and Slack threads to Gemini to extract structured architectural decisions.
     """
     if not client:
-        client = genai.Client(api_key=os.getenv("GEMINI_API_KEY", "dummy-key"))
+        api_key = os.getenv("GEMINI_API_KEY")
+        if not api_key or api_key == "dummy-key":
+            raise ValueError("GEMINI_API_KEY is not configured.")
+        client = genai.Client(api_key=api_key)
 
     jira_context = "No Jira tickets linked."
     if jira_tickets:
@@ -136,7 +153,11 @@ async def extract_decisions(
             )
         )
         
-        parsed = ExtractedDecisions.model_validate_json(response.text)
+        try:
+            parsed = ExtractedDecisions.model_validate_json(response.text)
+        except ValueError:
+            logger.error("Gemini response text unavailable (safety blocked?).")
+            return []
         
         # Enforce defaults
         for d in parsed.decisions:

@@ -47,7 +47,10 @@ async def search_decisions(q: str = Query(...)):
         )
 
     # Use Gemini to formulate the exact schema
-    gemini_client = genai.Client(api_key=os.getenv("GEMINI_API_KEY", "dummy-key"))
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key or api_key == "dummy-key":
+        raise HTTPException(status_code=500, detail="GEMINI_API_KEY is not configured.")
+    gemini_client = genai.Client(api_key=api_key)
     
     prompt = (
         f"Based on the following engineering decision records retrieved from our knowledge graph:\n\n"
@@ -71,8 +74,17 @@ async def search_decisions(q: str = Query(...)):
             )
         )
         
-        parsed = DecisionSearchResponse.model_validate_json(response.text)
-        return parsed
+        try:
+            parsed = DecisionSearchResponse.model_validate_json(response.text)
+            return parsed
+        except ValueError:
+            return DecisionSearchResponse(
+                answer="The AI response was blocked by safety filters or returned invalid JSON.",
+                decision_author="Unknown",
+                decision_date="Unknown",
+                source_pr_url="Unknown",
+                confidence=0.0
+            )
 
     except Exception as e:
         logger.error(f"Gemini answer generation failed: {e}")

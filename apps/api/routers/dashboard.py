@@ -101,7 +101,10 @@ async def fetch_and_parse_decisions() -> List[Decision]:
     if not graph_results:
         return []
 
-    gemini_client = genai.Client(api_key=os.getenv("GEMINI_API_KEY", "dummy-key"))
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key or api_key == "dummy-key":
+        raise HTTPException(status_code=500, detail="GEMINI_API_KEY is not configured.")
+    gemini_client = genai.Client(api_key=api_key)
 
     prompt = (
         f"Based on the following engineering decision records retrieved from our knowledge graph:\n\n"
@@ -127,7 +130,7 @@ async def fetch_and_parse_decisions() -> List[Decision]:
 
     except Exception as e:
         logger.error(f"Gemini dashboard parsing failed: {e}")
-        return []
+        raise HTTPException(status_code=500, detail="Failed to parse dashboard decisions via Gemini.")
 
 
 @router.get("/summary", response_model=HeatmapSummary)
@@ -244,8 +247,11 @@ async def get_heatmap_modules():
 
         # Silo risk penalty
         if lone_contributor_name:
-            is_still_active = active_members and lone_contributor_name.replace("@", "") in active_members
-            overall_risk = 100 if not is_still_active else min(overall_risk + 30, 90)
+            if active_members:
+                is_still_active = lone_contributor_name.replace("@", "") in active_members
+                overall_risk = 100 if not is_still_active else min(overall_risk + 30, 90)
+            else:
+                overall_risk = min(overall_risk + 30, 90)
 
         modules.append(ModuleRiskData(
             id=f"mod-{idx}",
@@ -301,7 +307,10 @@ async def get_pr_check(pr_number: str, title: Optional[str] = None, body: Option
         )
 
     # Ask Gemini to assess whether any retrieved decisions conflict with this PR
-    gemini_client = genai.Client(api_key=os.getenv("GEMINI_API_KEY", "dummy-key"))
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key or api_key == "dummy-key":
+        raise HTTPException(status_code=500, detail="GEMINI_API_KEY is not configured.")
+    gemini_client = genai.Client(api_key=api_key)
 
     class ConflictList(BaseModel):
         conflicts: List[PRConflict]
@@ -315,7 +324,7 @@ async def get_pr_check(pr_number: str, title: Optional[str] = None, body: Option
         f"{json.dumps(results, indent=2, default=str)}\n\n"
         f"Identify ONLY real conflicts — cases where this PR re-introduces something explicitly banned, "
         f"or removes something that was explicitly mandated. Ignore unrelated decisions. "
-        f"If no real conflicts exist, return an empty conflicts array and status='passed'."
+        f"If no real conflicts exist, return an empty conflicts array and overall_status='passed'."
     )
 
     try:
@@ -337,9 +346,4 @@ async def get_pr_check(pr_number: str, title: Optional[str] = None, body: Option
         )
     except Exception as e:
         logger.error(f"Gemini PR check analysis failed: {e}")
-        return PRCheckResult(
-            pr_number=pr_number,
-            status="unknown",
-            conflicts=[],
-            checked_at=datetime.now(timezone.utc).isoformat(),
-        )
+        raise HTTPException(status_code=500, detail="Failed to analyze PR conflicts via Gemini.")

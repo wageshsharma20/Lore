@@ -12,6 +12,7 @@ export function SyncButton() {
       await triggerGitHubSync();
       alert("✅ Sync triggered! Person A's AI pipeline is analyzing GitHub PRs...");
     } catch (error) {
+      console.error("Sync error:", error);
       alert("⚠️ Backend not running! (But in production, this would trigger the AI pipeline)");
     }
     setLoading(false);

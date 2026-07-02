@@ -250,12 +250,7 @@ def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail={"error": True, "code": 401, "detail": "Token has expired"})
     except jwt.InvalidTokenError:
-        # Fallback: accept a GitHub App JWT (RS256) without full signature verification
-        try:
-            payload = jwt.decode(token, options={"verify_signature": False})
-            return payload
-        except Exception:
-            raise HTTPException(status_code=401, detail={"error": True, "code": 401, "detail": "Invalid token"})
+        raise HTTPException(status_code=401, detail={"error": True, "code": 401, "detail": "Invalid token"})
 
 
 def get_stored_token(provider: str) -> Optional[str]:

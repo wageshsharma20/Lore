@@ -68,7 +68,17 @@ async def real_rag_pipeline(messages: List[ChatMessage]) -> AsyncGenerator[str, 
         f"If the context does not contain a relevant answer, say so honestly."
     )
 
-    gemini_client = genai.Client(api_key=os.getenv("GEMINI_API_KEY", "dummy-key"))
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key or api_key == "dummy-key":
+        yield f"data: {json.dumps({'type': 'status', 'message': ''})}\n\n"
+        error_msg = "Please configure your GEMINI_API_KEY in the settings before using the chat."
+        for word in error_msg.split(" "):
+            yield f"data: {json.dumps({'type': 'chunk', 'text': word + ' '})}\n\n"
+            await asyncio.sleep(0.03)
+        yield f"data: {json.dumps({'type': 'done'})}\n\n"
+        return
+
+    gemini_client = genai.Client(api_key=api_key)
 
     # 3. Clear status — start streaming
     yield f"data: {json.dumps({'type': 'status', 'message': ''})}\n\n"

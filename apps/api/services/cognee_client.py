@@ -102,7 +102,8 @@ class CogneeClient:
             if self._local_cognee and hasattr(self._local_cognee, "memify"):
                 result = await self._local_cognee.memify(decision_id)
                 return {"status": "success", "result": result}
-            return {"status": "success", "detail": "Local cognee memify stubbed."}
+            logger.warning(f"True graph memification for {decision_id} requires Cognee Cloud API. Simulating metadata tag update for local development.")
+            return {"status": "success", "detail": "Local cognee memify stubbed. Simulated metadata update."}
         
         # Cloud mode
         async with httpx.AsyncClient() as client:

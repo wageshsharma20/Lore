@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { motion, useInView } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -26,12 +26,12 @@ export function HyperText({
   const ref = useRef<HTMLSpanElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
-  const startAnimation = () => {
+  const startAnimation = useCallback(() => {
     iteration.current = 0;
     if (intervalRef.current) clearInterval(intervalRef.current);
 
     intervalRef.current = setInterval(() => {
-      setDisplayText((currentText) => {
+      setDisplayText(() => {
         return children
           .split("")
           .map((letter, index) => {
@@ -51,7 +51,7 @@ export function HyperText({
         setDisplayText(children);
       }
     }, 16);
-  };
+  }, [children, duration]);
 
   useEffect(() => {
     if (isInView) {
@@ -63,13 +63,13 @@ export function HyperText({
         if (intervalRef.current) clearInterval(intervalRef.current);
       };
     }
-  }, [children, delay, duration, isInView]);
+  }, [delay, isInView, startAnimation]);
 
   useEffect(() => {
     if (isHovered) {
       startAnimation();
     }
-  }, [isHovered]);
+  }, [isHovered, startAnimation]);
 
   return (
     <motion.span

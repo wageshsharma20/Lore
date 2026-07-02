@@ -36,7 +36,7 @@ async def ask_lore(request: AskRequest):
                 if isinstance(search_results[0], str):
                     answer_text = "\n".join(search_results)
                 else:
-                    answer_text = str(search_results[0])
+                    answer_text = "\n\n".join(str(r) for r in search_results)
             else:
                 answer_text = "No relevant context found in the graph."
                 

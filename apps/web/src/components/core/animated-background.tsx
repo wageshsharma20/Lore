@@ -28,7 +28,10 @@ export function AnimatedBackground({
   transition,
   enableHover = false,
 }: AnimatedBackgroundProps) {
-  const [activeId, setActiveId] = useState<string | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(
+    defaultValue !== undefined ? defaultValue : null
+  );
+
   const uniqueId = useId();
 
   const handleSetActiveId = (id: string | null) => {
@@ -37,12 +40,6 @@ export function AnimatedBackground({
       onValueChange(id);
     }
   };
-
-  useEffect(() => {
-    if (defaultValue !== undefined) {
-      setActiveId(defaultValue);
-    }
-  }, [defaultValue]);
 
   return (
     <>
