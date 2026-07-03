@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-from .routers import webhooks, auth, chat, adrs, ask, decisions, dashboard, sync
+from .routers import webhooks, auth, chat, adrs, ask, decisions, dashboard, sync, config
 import logging
 
 import logging
@@ -66,6 +66,7 @@ app.include_router(ask.router)
 app.include_router(decisions.router)
 app.include_router(dashboard.router)
 app.include_router(sync.router)
+app.include_router(config.router)
 
 @app.get("/health")
 async def health_check():

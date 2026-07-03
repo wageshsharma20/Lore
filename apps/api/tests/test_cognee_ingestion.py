@@ -34,7 +34,8 @@ async def test_cognee_ingestion_made_by_edge(mock_detect, mock_extract, mock_cog
     await _async_process_merged_pr(pr_payload)
     
     assert mock_client.add.called
-    added_payload = mock_client.add.call_args[0][0]
+    import json
+    added_payload = json.loads(mock_client.add.call_args[0][0])
     
     # Assert MADE_BY edge implicitly created by having made_by as a dict
     assert "made_by" in added_payload

@@ -1,6 +1,6 @@
 fastapi
 uvicorn
-pydantic>=2.4.0,<2.6.0
+pydantic>=2.7.0
 anthropic
 celery
 redis

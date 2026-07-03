@@ -2,35 +2,36 @@ import pytest
 import os
 from apps.api.services.gemini_service import extract_decisions
 from apps.api.services.github import PRData
-
 from unittest.mock import patch, AsyncMock
 import json
+from apps.api.services.gemini_service import ExtractedDecision, ExtractedDecisions
 
 @pytest.mark.asyncio
-@patch("apps.api.services.gemini_service.genai.Client")
-async def test_decision_extractor_outputs(mock_genai_client_class):
-    os.environ["GEMINI_API_KEY"] = "test-key"
+@patch("apps.api.services.gemini_service.get_llm_client")
+async def test_decision_extractor_outputs(mock_get_llm_client):
+    os.environ["GROQ_API_KEY"] = "test-key"
     mock_client = AsyncMock()
-    mock_genai_client_class.return_value = mock_client
+    mock_get_llm_client.return_value = mock_client
     
-    # Mock Gemini response with structured output
-    class MockResponse:
-        text = json.dumps({
-            "decisions": [
-                {
-                    "title": "Migrate to Postgres",
-                    "decision": "Use PostgreSQL instead of MongoDB.",
-                    "reason_summary": "Need ACID compliance for billing.",
-                    "decision_author": "alice",
-                    "contributing_authors": [],
-                    "alternatives_considered": [],
-                    "consequences": [],
-                    "confidence_score": 0.9
-                }
-            ]
-        })
-        
-    mock_client.aio.models.generate_content.return_value = MockResponse()
+    # Mock Instructor response
+    mock_response = ExtractedDecisions(
+        decisions=[
+            ExtractedDecision(
+                title="Migrate to Postgres",
+                decision="Use PostgreSQL instead of MongoDB.",
+                reason_summary="Need ACID compliance for billing.",
+                decision_author="alice",
+                contributing_authors=[],
+                alternatives_considered=[],
+                consequences=[],
+                confidence_score=0.9,
+                source_pr="test/repo/101"
+            )
+        ]
+    )
+    
+    mock_client.chat.completions.create.return_value = mock_response
+
 
     pr_data = PRData(
         title="Migrate to Postgres",
