@@ -1,4 +1,4 @@
-# 🧠 Lore: Engineering Historian
+#  Lore: Engineering Historian
 
 <div align="center">
   <p><strong>Your codebase's memory.</strong></p>
@@ -13,10 +13,10 @@
 
 ---
 
-## 🚀 The Problem
+##  The Problem
 In fast-moving engineering teams, **why** a decision was made is often lost. Documentation goes stale, Slack messages disappear, and institutional knowledge gets trapped in "silos" (single developers). When those developers leave or shift teams, the context is lost forever, leading to architectural drift and repeated mistakes.
 
-## 💡 The Solution: Lore
+##  The Solution: Lore
 Lore connects directly to your team's workflow (GitHub, Jira, Slack) and uses LLMs to passively listen and build a **Knowledge Graph** of your architecture.
 
 Whenever an engineer merges a PR with a significant architectural change, Lore:
@@ -25,13 +25,13 @@ Whenever an engineer merges a PR with a significant architectural change, Lore:
 3. **Graphs** the decision against your modules and dependencies in Neo4j.
 4. **Protects** your codebase by blocking future PRs that violate previous decisions.
 
-## ✨ Key Features
+##  Key Features
 - **Auto-ADR Generation**: Merging a PR automatically drafts a professional ADR using Gemini 1.5 Pro.
 - **The PR Interceptor**: GitHub Actions integration that blocks PRs attempting to violate active architectural contracts.
 - **Knowledge Silo Heatmap**: A D3-powered treemap that visually flags "At Risk" modules where only one developer holds the context.
 - **Ask Lore**: A conversational interface to chat with your engineering history (e.g., *"Why did we choose PostgreSQL?"*).
 
-## 🛠️ Architecture
+##  Architecture
 
 Lore is built as a highly scalable monorepo.
 
@@ -40,7 +40,7 @@ Lore is built as a highly scalable monorepo.
 *   **AI Engine**: Google Gemini 1.5 Pro (via `ai-sdk/google`).
 *   **Infrastructure**: Upstash Redis (Rate Limiting), Docker, GitHub Actions.
 
-## 🏃‍♂️ Getting Started (Local Development)
+##  Getting Started (Local Development)
 
 ### Prerequisites
 - Node.js 18+
@@ -72,7 +72,7 @@ uvicorn main:app --reload
 # The backend will run on http://localhost:8000
 ```
 
-## ☁️ Deployment Modes 
+## Deployment Modes 
 
 Lore supports a Dual Deployment architecture, meaning the **exact same codebase** powers both a fully open-source local environment and a massively scalable cloud environment. 
 
@@ -96,8 +96,8 @@ docker-compose -f docker-compose.prod.local.yml up -d
 ```
 *Note: This spins up a local Neo4j container automatically.*
 
-## 🤝 Contributing
+##  Contributing
 For the Hackathon, please ensure any architectural changes you make are tagged with the relevant Jira ticket in your PR description so Lore can track it!
 
-## 📄 License
+##  License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
