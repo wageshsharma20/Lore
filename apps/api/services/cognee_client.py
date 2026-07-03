@@ -19,6 +19,8 @@ class CogneeClient:
         
         if self.mode == "local":
             try:
+                os.environ["ENABLE_BACKEND_ACCESS_CONTROL"] = "false"
+                os.environ["REQUIRE_AUTHENTICATION"] = "false"
                 import cognee # type: ignore
                 self._local_cognee = cognee
                 logger.info("CogneeClient initialized in LOCAL (Open-Source) mode.")
@@ -34,8 +36,8 @@ class CogneeClient:
         """Add data to Cognee for processing."""
         if self.mode == "local":
             if self._local_cognee:
-                # Assuming cognee.add(data, dataset_id)
-                result = await self._local_cognee.add(data, dataset_id=dataset_id)
+                # Assuming cognee.add(data, dataset_name)
+                result = await self._local_cognee.add(data, dataset_name=dataset_id)
                 return {"status": "success", "result": result}
             return {"status": "error", "detail": "Local cognee not installed."}
         
@@ -56,7 +58,7 @@ class CogneeClient:
         """Trigger graph building (cognify) on the dataset."""
         if self.mode == "local":
             if self._local_cognee:
-                result = await self._local_cognee.cognify(dataset_id=dataset_id)
+                result = await self._local_cognee.cognify(datasets=[dataset_id])
                 return {"status": "success", "result": result}
             return {"status": "error", "detail": "Local cognee not installed."}
         
@@ -76,8 +78,8 @@ class CogneeClient:
         if self.mode == "local":
             if self._local_cognee:
                 try:
-                    from cognee.modules.search.types import SearchType
-                    qt = SearchType.HYBRID if search_type.lower() == "hybrid" else SearchType.CHUNKS
+                    from cognee.modules.search.types.SearchType import SearchType
+                    qt = SearchType.CHUNKS
                 except ImportError:
                     qt = search_type
                 result = await self._local_cognee.search(query_text=query, query_type=qt)

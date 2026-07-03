@@ -4,8 +4,7 @@ from typing import Dict, Any, List
 from ..services.cognee_client import CogneeClient
 import logging
 import os
-from google import genai
-from google.genai import types
+
 
 logger = logging.getLogger(__name__)
 
@@ -40,10 +39,8 @@ async def list_adrs():
     if not results:
         return []
         
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key or api_key == "dummy-key":
-        raise HTTPException(status_code=500, detail="GEMINI_API_KEY is not configured.")
-    gemini_client = genai.Client(api_key=api_key)
+    from ..services.gemini_service import get_llm_client, DEFAULT_MODEL
+    llm_client = get_llm_client()
     
     class ADRList(BaseModel):
         adrs: List[ADRResponse]
@@ -55,19 +52,15 @@ async def list_adrs():
     )
     
     try:
-        response = await gemini_client.aio.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                response_mime_type="application/json",
-                response_schema=ADRList,
-                temperature=0.1
-            )
+        response = await llm_client.chat.completions.create(
+            model=DEFAULT_MODEL,
+            messages=[{"role": "user", "content": prompt}],
+            response_model=ADRList,
+            temperature=0.1
         )
-        parsed = ADRList.model_validate_json(response.text)
-        return parsed.adrs
+        return response.adrs
     except Exception as e:
-        logger.error(f"Gemini ADR parsing failed: {e}")
+        logger.error(f"LLM ADR parsing failed: {e}")
         return []
 
 @router.get("/adrs/{adr_id}", response_model=ADRResponse)

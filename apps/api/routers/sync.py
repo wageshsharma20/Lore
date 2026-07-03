@@ -31,9 +31,11 @@ async def fetch_historical_prs(repo: str, token: str):
             for pr in prs:
                 if pr.get("merged_at"):
                     try:
-                        process_merged_pr_task.delay(pr)
+                        # Call the async function directly to avoid asyncio.run() crash in event loop
+                        from ..tasks.pr_tasks import _async_process_merged_pr
+                        await _async_process_merged_pr(pr)
                     except Exception as e:
-                        logger.error(f"Failed to queue PR task: {e}")
+                        logger.error(f"Failed to process PR task: {e}")
 
 @router.post("/sync")
 async def trigger_github_sync(background_tasks: BackgroundTasks):
@@ -41,10 +43,12 @@ async def trigger_github_sync(background_tasks: BackgroundTasks):
     if not github_token:
         raise HTTPException(status_code=401, detail="GitHub not connected. Please connect in Settings.")
         
-    import os
-    repo_owner = os.getenv("GITHUB_REPO_OWNER", "tarot-club-hackathons")
-    repo_name = os.getenv("GITHUB_REPO_NAME", "lore")
-    repo = f"{repo_owner}/{repo_name}"
+    from ..core.config_store import load_config
+    config = load_config()
+    repo = config.github_repo
+    
+    if not repo:
+        raise HTTPException(status_code=400, detail="GitHub repository not configured. Please configure it in Settings.")
     
     background_tasks.add_task(fetch_historical_prs, repo, github_token)
     return {"status": "Sync triggered successfully"}

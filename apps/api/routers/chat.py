@@ -6,8 +6,7 @@ from typing import List, AsyncGenerator
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
-from google import genai
-from google.genai import types
+
 
 from ..services.cognee_client import CogneeClient
 
@@ -68,34 +67,27 @@ async def real_rag_pipeline(messages: List[ChatMessage]) -> AsyncGenerator[str, 
         f"If the context does not contain a relevant answer, say so honestly."
     )
 
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key or api_key == "dummy-key":
-        yield f"data: {json.dumps({'type': 'status', 'message': ''})}\n\n"
-        error_msg = "Please configure your GEMINI_API_KEY in the settings before using the chat."
-        for word in error_msg.split(" "):
-            yield f"data: {json.dumps({'type': 'chunk', 'text': word + ' '})}\n\n"
-            await asyncio.sleep(0.03)
-        yield f"data: {json.dumps({'type': 'done'})}\n\n"
-        return
-
-    gemini_client = genai.Client(api_key=api_key)
+    from ..services.gemini_service import get_llm_client, DEFAULT_MODEL
+    import litellm
 
     # 3. Clear status — start streaming
     yield f"data: {json.dumps({'type': 'status', 'message': ''})}\n\n"
 
     try:
-        async for chunk in await gemini_client.aio.models.generate_content_stream(
-            model="gemini-2.5-flash",
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                system_instruction="You are Lore, an engineering knowledge assistant. Be concise and cite sources.",
-                temperature=0.2,
-            ),
-        ):
-            if chunk.text:
-                yield f"data: {json.dumps({'type': 'chunk', 'text': chunk.text})}\n\n"
+        response = await litellm.acompletion(
+            model=DEFAULT_MODEL,
+            messages=[
+                {"role": "system", "content": "You are Lore, an engineering knowledge assistant. Be concise and cite sources."},
+                {"role": "user", "content": prompt}
+            ],
+            stream=True,
+            temperature=0.2,
+        )
+        async for chunk in response:
+            if chunk.choices and chunk.choices[0].delta.content:
+                yield f"data: {json.dumps({'type': 'chunk', 'text': chunk.choices[0].delta.content})}\n\n"
     except Exception as e:
-        logger.error(f"Gemini streaming failed in chat: {e}")
+        logger.error(f"LLM streaming failed in chat: {e}")
         error_msg = f"I encountered an error generating the answer: {str(e)}"
         yield f"data: {json.dumps({'type': 'chunk', 'text': error_msg})}\n\n"
 

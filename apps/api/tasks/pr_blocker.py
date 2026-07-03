@@ -7,8 +7,7 @@ from ..services.github import set_pr_status, post_pr_blocker_comment, Conflict
 from ..services.cognee_client import CogneeClient
 from ..routers.auth import get_stored_token
 from pydantic import BaseModel
-from google import genai
-from google.genai import types
+
 
 logger = logging.getLogger(__name__)
 
@@ -25,10 +24,8 @@ async def detect_pr_intent(pr_payload: dict) -> PRIntent:
     """
     title = pr_payload.get("title", "")
     body = pr_payload.get("body", "") or ""
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key or api_key == "dummy-key":
-        raise ValueError("GEMINI_API_KEY is not configured.")
-    gemini_client = genai.Client(api_key=api_key)
+    from ..services.gemini_service import get_llm_client, DEFAULT_MODEL
+    llm_client = get_llm_client()
 
     prompt = (
         f"Analyze this pull request and extract its intent.\n\n"
@@ -39,22 +36,15 @@ async def detect_pr_intent(pr_payload: dict) -> PRIntent:
     )
 
     try:
-        response = await gemini_client.aio.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                response_mime_type="application/json",
-                response_schema=PRIntent,
-                temperature=0.1,
-            )
+        parsed = await llm_client.chat.completions.create(
+            model=DEFAULT_MODEL,
+            messages=[{"role": "user", "content": prompt}],
+            response_model=PRIntent,
+            temperature=0.1
         )
-        try:
-            return PRIntent.model_validate_json(response.text)
-        except ValueError:
-            logger.error("Gemini response text unavailable (safety blocked?).")
-            raise ValueError("Safety blocked")
+        return parsed
     except Exception as e:
-        logger.error(f"Gemini PR intent detection failed: {e}. Falling back to basic extraction.")
+        logger.error(f"LLM PR intent detection failed: {e}. Falling back to basic extraction.")
         # Graceful fallback: extract technologies from title keywords
         text = f"{title} {body}".lower()
         technologies = []

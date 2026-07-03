@@ -4,8 +4,7 @@ from typing import List, Optional
 import os
 import json
 import logging
-from google import genai
-from google.genai import types
+
 
 from ..services.cognee_client import CogneeClient
 from ..services.teams import get_active_team_members
@@ -101,10 +100,8 @@ async def fetch_and_parse_decisions() -> List[Decision]:
     if not graph_results:
         return []
 
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key or api_key == "dummy-key":
-        raise HTTPException(status_code=500, detail="GEMINI_API_KEY is not configured.")
-    gemini_client = genai.Client(api_key=api_key)
+    from ..services.gemini_service import get_llm_client, DEFAULT_MODEL
+    llm_client = get_llm_client()
 
     prompt = (
         f"Based on the following engineering decision records retrieved from our knowledge graph:\n\n"
@@ -114,23 +111,23 @@ async def fetch_and_parse_decisions() -> List[Decision]:
     )
 
     try:
-        response = await gemini_client.aio.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                response_mime_type="application/json",
-                response_schema=DecisionList,
-                system_instruction="You are an AI assistant parsing architectural decisions for a dashboard.",
-                temperature=0.1
-            )
+        response = await llm_client.chat.completions.create(
+            model=DEFAULT_MODEL,
+            messages=[
+                {"role": "system", "content": "You are an AI assistant parsing architectural decisions for a dashboard."},
+                {"role": "user", "content": prompt}
+            ],
+            response_model=DecisionList,
+            temperature=0.1
         )
-        parsed = DecisionList.model_validate_json(response.text)
+        parsed = response
         _DASHBOARD_CACHE["decisions"] = parsed.decisions
         return parsed.decisions
 
     except Exception as e:
-        logger.error(f"Gemini dashboard parsing failed: {e}")
-        raise HTTPException(status_code=500, detail="Failed to parse dashboard decisions via Gemini.")
+        logger.error(f"LLM dashboard parsing failed: {e}")
+        raise HTTPException(status_code=500, detail="Failed to parse dashboard decisions via LLM.")
+
 
 
 @router.get("/summary", response_model=HeatmapSummary)
@@ -306,11 +303,8 @@ async def get_pr_check(pr_number: str, title: Optional[str] = None, body: Option
             checked_at=datetime.now(timezone.utc).isoformat(),
         )
 
-    # Ask Gemini to assess whether any retrieved decisions conflict with this PR
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key or api_key == "dummy-key":
-        raise HTTPException(status_code=500, detail="GEMINI_API_KEY is not configured.")
-    gemini_client = genai.Client(api_key=api_key)
+    from ..services.gemini_service import get_llm_client, DEFAULT_MODEL
+    llm_client = get_llm_client()
 
     class ConflictList(BaseModel):
         conflicts: List[PRConflict]
@@ -328,16 +322,12 @@ async def get_pr_check(pr_number: str, title: Optional[str] = None, body: Option
     )
 
     try:
-        response = await gemini_client.aio.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                response_mime_type="application/json",
-                response_schema=ConflictList,
-                temperature=0.1,
-            )
+        parsed = await llm_client.chat.completions.create(
+            model=DEFAULT_MODEL,
+            messages=[{"role": "user", "content": prompt}],
+            response_model=ConflictList,
+            temperature=0.1
         )
-        parsed = ConflictList.model_validate_json(response.text)
         return PRCheckResult(
             pr_number=pr_number,
             status=parsed.overall_status,
@@ -345,5 +335,5 @@ async def get_pr_check(pr_number: str, title: Optional[str] = None, body: Option
             checked_at=datetime.now(timezone.utc).isoformat(),
         )
     except Exception as e:
-        logger.error(f"Gemini PR check analysis failed: {e}")
-        raise HTTPException(status_code=500, detail="Failed to analyze PR conflicts via Gemini.")
+        logger.error(f"LLM PR check analysis failed: {e}")
+        raise HTTPException(status_code=500, detail="Failed to analyze PR conflicts via LLM.")

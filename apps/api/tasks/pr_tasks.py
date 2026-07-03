@@ -51,7 +51,8 @@ async def _async_process_merged_pr(pr_payload: Dict[str, Any]):
         }
         
         try:
-            await client.add(db_payload, dataset_id="architecture_decisions")
+            import json
+            await client.add(json.dumps(db_payload), dataset_id="architecture_decisions")
             saved_count += 1
         except Exception as e:
             logger.error(f"Failed to save decision to Cognee DB: {e}")

@@ -3,13 +3,16 @@ import json
 import logging
 from typing import List, Optional
 from pydantic import BaseModel, Field
-from google import genai
-from google.genai import types
+import instructor
+import litellm
 from .github import PRData
 from ..core.config import settings
 from .jira import JiraTicket
 
 logger = logging.getLogger(__name__)
+
+# Fallback model for general use if not explicitly passed
+DEFAULT_MODEL = "groq/llama-3.3-70b-versatile"
 
 class ExtractedDecision(BaseModel):
     title: str = Field(description="A short, clear title of the architectural or technical decision.")
@@ -24,62 +27,60 @@ class ExtractedDecision(BaseModel):
 class ExtractedDecisions(BaseModel):
     decisions: List[ExtractedDecision]
 
-async def detect_architectural_intent(pr: PRData, client: Optional[genai.Client] = None) -> bool:
+def get_llm_client():
+    """Returns an instructor-patched litellm async client."""
+    # Litellm relies on environment variables like GROQ_API_KEY, OPENAI_API_KEY, etc.
+    # It supports a completion function, which instructor wraps.
+    client = instructor.from_litellm(litellm.acompletion)
+    return client
+
+async def detect_architectural_intent(pr: PRData) -> bool:
     """
     Fast and cheap intent detector to check if a PR likely contains architectural or significant technical decisions.
     """
-    if not client:
-        api_key = os.getenv("GEMINI_API_KEY")
-        if not api_key or api_key == "dummy-key":
-            raise ValueError("GEMINI_API_KEY is not configured.")
-        client = genai.Client(api_key=api_key)
-
+    client = get_llm_client()
     prompt = (
         f"Does the following pull request seem to introduce architectural changes, new patterns, core library updates, "
         f"or significant technical decisions? Answer 'YES' or 'NO' only.\n\n"
         f"Title: {pr.title}\nDescription: {pr.body[:2000]}"
     )
+    
+    class IntentResponse(BaseModel):
+        is_architectural: bool
+
     try:
-        response = await client.aio.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=prompt,
-            config=types.GenerateContentConfig(temperature=0.1)
+        response = await client.chat.completions.create(
+            model=DEFAULT_MODEL,
+            messages=[{"role": "user", "content": prompt}],
+            response_model=IntentResponse,
+            temperature=0.1
         )
-        try:
-            answer = response.text.strip().upper()
-        except ValueError:
-            logger.error("Gemini response text unavailable (safety blocked?).")
-            return True # Fallback
-        return "YES" in answer
+        return response.is_architectural
     except Exception as e:
         logger.error(f"Intent detector failed: {e}")
         return True # Fallback to running full extraction if it fails
 
-async def summarize_diff(diff: str, client: Optional[genai.Client] = None) -> str:
+async def summarize_diff(diff: str) -> str:
     """
     Summarizes a large code diff to prevent blowing up the context window.
     """
     if len(diff) < 10000:
         return diff  # Optimization: Skip LLM call if diff is manageable
 
-    if not client:
-        api_key = os.getenv("GEMINI_API_KEY")
-        if not api_key or api_key == "dummy-key":
-            raise ValueError("GEMINI_API_KEY is not configured.")
-        client = genai.Client(api_key=api_key)
-
+    client = get_llm_client()
     prompt = f"Please summarize the following code diff concisely, focusing only on structural, architectural, or significant logic changes:\n\n{diff[:50000]}"
+    
+    class SummaryResponse(BaseModel):
+        summary: str
+
     try:
-        response = await client.aio.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=prompt,
-            config=types.GenerateContentConfig(temperature=0.1)
+        response = await client.chat.completions.create(
+            model=DEFAULT_MODEL,
+            messages=[{"role": "user", "content": prompt}],
+            response_model=SummaryResponse,
+            temperature=0.1
         )
-        try:
-            return response.text
-        except ValueError:
-            logger.error("Gemini response text unavailable (safety blocked?).")
-            return diff[:10000]
+        return response.summary
     except Exception as e:
         logger.error(f"Failed to summarize diff: {e}")
         return diff[:10000] # Fallback truncation
@@ -87,17 +88,12 @@ async def summarize_diff(diff: str, client: Optional[genai.Client] = None) -> st
 async def extract_decisions(
     pr: PRData, 
     jira_tickets: Optional[List[JiraTicket]] = None,
-    slack_threads: Optional[List[str]] = None,
-    client: Optional[genai.Client] = None
+    slack_threads: Optional[List[str]] = None
 ) -> List[ExtractedDecision]:
     """
-    Passes the PR diff, description, Jira context, and Slack threads to Gemini to extract structured architectural decisions.
+    Passes the PR diff, description, Jira context, and Slack threads to an LLM to extract structured architectural decisions.
     """
-    if not client:
-        api_key = os.getenv("GEMINI_API_KEY")
-        if not api_key or api_key == "dummy-key":
-            raise ValueError("GEMINI_API_KEY is not configured.")
-        client = genai.Client(api_key=api_key)
+    client = get_llm_client()
 
     jira_context = "No Jira tickets linked."
     if jira_tickets:
@@ -142,22 +138,17 @@ async def extract_decisions(
     """
 
     try:
-        response = await client.aio.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                response_mime_type="application/json",
-                response_schema=ExtractedDecisions,
-                system_instruction=system_prompt,
-                temperature=0.1
-            )
+        response = await client.chat.completions.create(
+            model=DEFAULT_MODEL,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": prompt}
+            ],
+            response_model=ExtractedDecisions,
+            temperature=0.1
         )
         
-        try:
-            parsed = ExtractedDecisions.model_validate_json(response.text)
-        except ValueError:
-            logger.error("Gemini response text unavailable (safety blocked?).")
-            return []
+        parsed = response
         
         # Enforce defaults
         for d in parsed.decisions:
@@ -167,5 +158,5 @@ async def extract_decisions(
         return parsed.decisions
 
     except Exception as e:
-        logger.error(f"Failed to extract decisions via Gemini: {e}")
+        logger.error(f"Failed to extract decisions via LLM: {e}")
         return []

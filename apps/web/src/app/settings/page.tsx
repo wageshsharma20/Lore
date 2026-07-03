@@ -9,26 +9,43 @@ export default function SettingsPage() {
     jira: false
   });
   
+  const [config, setConfig] = useState({
+    github_repo: "",
+    slack_channel: "",
+    jira_workspace: ""
+  });
+
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   // Read the API URL from environment variable, fallback to localhost
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/auth/status`)
-      .then((res) => res.json())
-      .then((data) => {
-        setStatus({
-          github: !!data.github,
-          slack: !!data.slack,
-          jira: !!data.jira
-        });
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Failed to fetch auth status:", err);
-        setLoading(false);
+    // Fetch auth status and config in parallel
+    Promise.all([
+      fetch(`${API_BASE_URL}/auth/status`).then(res => res.json()),
+      fetch(`${API_BASE_URL}/api/config`).then(res => res.json())
+    ])
+    .then(([authData, configData]) => {
+      setStatus({
+        github: !!authData.github,
+        slack: !!authData.slack,
+        jira: !!authData.jira
       });
+      if (configData && !configData.error) {
+        setConfig({
+          github_repo: configData.github_repo || "",
+          slack_channel: configData.slack_channel || "",
+          jira_workspace: configData.jira_workspace || ""
+        });
+      }
+      setLoading(false);
+    })
+    .catch((err) => {
+      console.error("Failed to fetch settings:", err);
+      setLoading(false);
+    });
   }, [API_BASE_URL]);
 
   const handleConnect = (provider: string) => {
@@ -48,12 +65,32 @@ export default function SettingsPage() {
     }
   };
 
+  const handleSaveConfig = async () => {
+    setSaving(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/config`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(config)
+      });
+      if (!res.ok) throw new Error("Failed to save configuration");
+      // Could add a toast success notification here
+    } catch (err) {
+      console.error("Error saving config:", err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const integrations = [
     {
       id: "github",
       name: "GitHub",
       description: "Connect to auto-extract context from Pull Requests and Issues.",
       connected: status.github,
+      configKey: "github_repo",
+      configLabel: "Repository (e.g. owner/repo)",
+      configPlaceholder: "tarot-club-hackathons/lore",
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
       )
@@ -63,6 +100,9 @@ export default function SettingsPage() {
       name: "Slack",
       description: "Connect the @Lore bot to answer architecture questions in channel.",
       connected: status.slack,
+      configKey: "slack_channel",
+      configLabel: "Channel Name (e.g. #engineering)",
+      configPlaceholder: "#engineering",
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
       )
@@ -72,6 +112,9 @@ export default function SettingsPage() {
       name: "Jira",
       description: "Map architecture decisions directly to project tickets.",
       connected: status.jira,
+      configKey: "jira_workspace",
+      configLabel: "Jira Workspace URL",
+      configPlaceholder: "https://your-domain.atlassian.net",
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
       )
@@ -80,9 +123,18 @@ export default function SettingsPage() {
 
   return (
     <main className="p-8 mx-36 min-h-[80vh]">
-      <div className="mb-10 border-b border-white/10 pb-8">
-        <h1 className="text-3xl font-['Arial'] font-bold mb-2 text-white">Settings</h1>
-        <p className="text-white/40">Manage your workspace integrations and preferences.</p>
+      <div className="mb-10 border-b border-white/10 pb-8 flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-['Arial'] font-bold mb-2 text-white">Settings</h1>
+          <p className="text-white/40">Manage your workspace integrations and preferences.</p>
+        </div>
+        <button
+          onClick={handleSaveConfig}
+          disabled={saving || loading}
+          className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded font-medium transition-colors disabled:opacity-50"
+        >
+          {saving ? "Saving..." : "Save Configuration"}
+        </button>
       </div>
 
       <section>
@@ -91,40 +143,57 @@ export default function SettingsPage() {
         {loading ? (
           <div className="text-white/40">Loading connection status...</div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-6">
             {integrations.map((integration) => (
-              <div key={integration.id} className="flex items-center justify-between p-6 bg-white/5 backdrop-blur-md border border-white/10 hover:bg-white/10 transition-colors">
-                <div className="flex items-start gap-4">
-                  <div className="p-3 bg-white/5 border border-white/10 text-white/60">
-                    {integration.icon}
+              <div key={integration.id} className="flex flex-col bg-white/5 backdrop-blur-md border border-white/10 transition-colors">
+                <div className="flex items-center justify-between p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="p-3 bg-white/5 border border-white/10 text-white/60">
+                      {integration.icon}
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-lg text-white">{integration.name}</h3>
+                      <p className="text-white/40 text-sm mt-1">{integration.description}</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-bold text-lg text-white">{integration.name}</h3>
-                    <p className="text-white/40 text-sm mt-1">{integration.description}</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-4">
-                  {integration.connected ? (
-                    <span className="flex items-center gap-1.5 text-sm font-medium text-emerald-400 bg-emerald-500/10 px-2.5 py-1 border border-emerald-500/20">
-                      <span className="w-1.5 h-1.5 bg-emerald-500"></span>
-                      Connected
-                    </span>
-                  ) : (
-                    <span className="text-sm font-medium text-white/30">Not connected</span>
-                  )}
                   
-                  <button 
-                    onClick={() => integration.connected ? handleDisconnect(integration.id) : handleConnect(integration.id)}
-                    className={`px-4 py-2 font-medium text-sm transition-colors ${
-                      integration.connected 
-                        ? 'bg-white/5 border border-white/10 text-white/60 hover:bg-white/10 hover:text-white' 
-                        : 'bg-[#0052ff] text-white hover:bg-[#0052ff]/80'
-                    }`}
-                  >
-                    {integration.connected ? 'Disconnect' : 'Connect'}
-                  </button>
+                  <div className="flex items-center gap-4">
+                    {integration.connected ? (
+                      <span className="flex items-center gap-1.5 text-sm font-medium text-emerald-400 bg-emerald-500/10 px-2.5 py-1 border border-emerald-500/20">
+                        <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
+                        Connected
+                      </span>
+                    ) : (
+                      <span className="text-sm font-medium text-white/30">Not connected</span>
+                    )}
+                    
+                    <button 
+                      onClick={() => integration.connected ? handleDisconnect(integration.id) : handleConnect(integration.id)}
+                      className={`px-4 py-2 font-medium text-sm transition-colors ${
+                        integration.connected 
+                          ? 'bg-white/5 border border-white/10 text-white/60 hover:bg-white/10 hover:text-white' 
+                          : 'bg-[#0052ff] text-white hover:bg-[#0052ff]/80'
+                      }`}
+                    >
+                      {integration.connected ? 'Disconnect' : 'Connect'}
+                    </button>
+                  </div>
                 </div>
+
+                {integration.connected && (
+                  <div className="px-6 pb-6 pt-2 border-t border-white/5 mt-2 bg-white/[0.02]">
+                    <div className="flex flex-col mt-4 gap-2">
+                      <label className="text-sm font-medium text-white/70">{integration.configLabel}</label>
+                      <input 
+                        type="text" 
+                        value={(config as any)[integration.configKey]}
+                        onChange={(e) => setConfig({...config, [integration.configKey]: e.target.value})}
+                        placeholder={integration.configPlaceholder}
+                        className="bg-black/40 border border-white/10 rounded px-4 py-2 text-white focus:outline-none focus:border-blue-500 transition-colors"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>

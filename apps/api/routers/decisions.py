@@ -3,8 +3,7 @@ from pydantic import BaseModel
 import os
 import json
 import logging
-from google import genai
-from google.genai import types
+
 
 from ..services.cognee_client import CogneeClient
 from .auth import verify_token
@@ -46,11 +45,9 @@ async def search_decisions(q: str = Query(...)):
             confidence=0.0
         )
 
-    # Use Gemini to formulate the exact schema
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key or api_key == "dummy-key":
-        raise HTTPException(status_code=500, detail="GEMINI_API_KEY is not configured.")
-    gemini_client = genai.Client(api_key=api_key)
+    # Use LLM to formulate the exact schema
+    from ..services.gemini_service import get_llm_client, DEFAULT_MODEL
+    llm_client = get_llm_client()
     
     prompt = (
         f"Based on the following engineering decision records retrieved from our knowledge graph:\n\n"
@@ -63,31 +60,18 @@ async def search_decisions(q: str = Query(...)):
     )
     
     try:
-        response = await gemini_client.aio.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                response_mime_type="application/json",
-                response_schema=DecisionSearchResponse,
-                system_instruction="You are an AI assistant parsing architectural decisions.",
-                temperature=0.1
-            )
+        response = await llm_client.chat.completions.create(
+            model=DEFAULT_MODEL,
+            messages=[
+                {"role": "system", "content": "You are an AI assistant parsing architectural decisions."},
+                {"role": "user", "content": prompt}
+            ],
+            response_model=DecisionSearchResponse,
+            temperature=0.1
         )
-        
-        try:
-            parsed = DecisionSearchResponse.model_validate_json(response.text)
-            return parsed
-        except ValueError:
-            return DecisionSearchResponse(
-                answer="The AI response was blocked by safety filters or returned invalid JSON.",
-                decision_author="Unknown",
-                decision_date="Unknown",
-                source_pr_url="Unknown",
-                confidence=0.0
-            )
-
+        return response
     except Exception as e:
-        logger.error(f"Gemini answer generation failed: {e}")
+        logger.error(f"LLM answer generation failed: {e}")
         raise HTTPException(
             status_code=500, 
             detail={"error": True, "code": 500, "detail": "Answer generation failed"}
