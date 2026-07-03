@@ -26,7 +26,7 @@ function MemoryModeToggle() {
 function OnboardingChecklist() {
   const [status, setStatus] = useState({ github: false, slack: false, jira: false });
   useEffect(() => {
-    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
     fetch(`${API_BASE_URL}/auth/status`)
       .then(res => res.json())
       .then(data => setStatus({ github: !!data.github, slack: !!data.slack, jira: !!data.jira }))

@@ -8,7 +8,7 @@ export type ADR = components["schemas"]["ADRResponse"];
 export type ModuleRiskData = components["schemas"]["ModuleRiskData"];
 export type PRCheckResult = components["schemas"]["PRCheckResult"];
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 
 export async function getSummary(): Promise<HeatmapSummary> {
   const res = await fetch(`${API_BASE_URL}/api/summary`);

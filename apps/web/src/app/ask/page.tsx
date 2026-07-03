@@ -70,7 +70,7 @@ export default function AskPage() {
     abortControllerRef.current = new AbortController();
 
     try {
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
       
       const res = await fetch(`${API_BASE_URL}/api/chat`, {
         method: 'POST',
