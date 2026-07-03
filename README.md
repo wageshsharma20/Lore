@@ -72,7 +72,7 @@ uvicorn main:app --reload
 # The backend will run on http://localhost:8000
 ```
 
-## ☁️ Deployment Modes (Day 9)
+## ☁️ Deployment Modes 
 
 Lore supports a Dual Deployment architecture, meaning the **exact same codebase** powers both a fully open-source local environment and a massively scalable cloud environment. 
 
