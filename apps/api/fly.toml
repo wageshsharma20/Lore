@@ -1,0 +1,33 @@
+app = "lore-backend"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "8080"
+  PYTHONPATH = "/app"
+
+[processes]
+  app = "uvicorn main:app --host 0.0.0.0 --port 8080"
+  worker = "celery -A tasks worker --loglevel=info --concurrency=2"
+  beat = "celery -A tasks beat --loglevel=info"
+
+[[services]]
+  protocol = "tcp"
+  internal_port = 8080
+  processes = ["app"]
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+    force_https = true
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+
+  [services.concurrency]
+    type = "connections"
+    hard_limit = 25
+    soft_limit = 20
